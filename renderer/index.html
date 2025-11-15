@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+    <title>Ứng dụng ElectronJS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🚀 Ứng dụng ElectronJS</h1>
+            <p class="subtitle">Ứng dụng desktop đa nền tảng với Electron</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Info Section -->
+            <section class="card">
+                <h2>📋 Thông tin ứng dụng</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">Phiên bản:</span>
+                        <span class="value" id="app-version">Đang tải...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Đường dẫn:</span>
+                        <span class="value" id="app-path">Đang tải...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Hệ điều hành:</span>
+                        <span class="value" id="platform">Đang tải...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Node.js:</span>
+                        <span class="value" id="node-version">Đang tải...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Chrome:</span>
+                        <span class="value" id="chrome-version">Đang tải...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Electron:</span>
+                        <span class="value" id="electron-version">Đang tải...</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="card">
+                <h2>⚡ Chức năng</h2>
+                <div class="features-grid">
+                    <button class="feature-btn" id="btn-show-message">
+                        <span class="icon">💬</span>
+                        <span class="text">Hiển thị thông báo</span>
+                    </button>
+                    <button class="feature-btn" id="btn-open-file">
+                        <span class="icon">📂</span>
+                        <span class="text">Mở file</span>
+                    </button>
+                    <button class="feature-btn" id="btn-save-file">
+                        <span class="icon">💾</span>
+                        <span class="text">Lưu file</span>
+                    </button>
+                    <button class="feature-btn" id="btn-get-info">
+                        <span class="icon">ℹ️</span>
+                        <span class="text">Cập nhật thông tin</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Demo Section -->
+            <section class="card">
+                <h2>🎨 Demo</h2>
+                <div class="demo-section">
+                    <div class="input-group">
+                        <label for="demo-input">Nhập văn bản:</label>
+                        <input type="text" id="demo-input" placeholder="Nhập nội dung..." />
+                    </div>
+                    <div class="input-group">
+                        <label for="demo-textarea">Ghi chú:</label>
+                        <textarea id="demo-textarea" rows="4" placeholder="Nhập ghi chú của bạn..."></textarea>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" id="btn-clear">Xóa</button>
+                        <button class="btn-secondary" id="btn-save">Lưu</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Output Section -->
+            <section class="card">
+                <h2>📝 Kết quả</h2>
+                <div class="output-box" id="output">
+                    <p class="placeholder">Kết quả sẽ hiển thị ở đây...</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Được xây dựng với ❤️ sử dụng Electron | © 2024</p>
+        </footer>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+Đặt các file icon vào đây:
+- icon.png (1024x1024) - cho Linux
+- icon.ico (256x256) - cho Windows  
+- icon.icns - cho macOS
+
+Bạn có thể tạo icons từ PNG gốc bằng các công cụ:
+- https://www.icoconverter.com/
+- https://convertio.co/png-ico/
+- https://cloudconvert.com/png-to-icns
