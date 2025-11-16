@@ -109,6 +109,7 @@ from api.posted_content_api import router as posted_content_router
 from api.device_ips_api import router as device_ips_router
 from api.whitelist_api import router as whitelist_router
 from api.messages_api import router as messages_router
+from api.friend_management_api import router as friend_management_router
 
 app.include_router(advanced_router)
 app.include_router(settings_router)
@@ -125,6 +126,7 @@ app.include_router(posted_content_router)
 app.include_router(device_ips_router)
 app.include_router(whitelist_router)
 app.include_router(messages_router)
+app.include_router(friend_management_router)
 
 # ============================================
 # PYDANTIC MODELS
