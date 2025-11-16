@@ -1390,6 +1390,31 @@ const BiAds = {
         }
     },
     
+    // Load Task History Page
+    loadTaskHistoryPage: async function() {
+        const content = document.getElementById('contentBody');
+        const title = document.getElementById('contentTitle');
+        title.textContent = '📋 Lịch sử tác vụ & Chrome Sessions';
+        
+        try {
+            const response = await fetch('task-history.html');
+            const html = await response.text();
+            content.innerHTML = html;
+            
+            // Execute any scripts in the loaded content
+            const scripts = content.querySelectorAll('script');
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                document.body.appendChild(newScript);
+                document.body.removeChild(newScript);
+            });
+        } catch (error) {
+            console.error('Error loading task history page:', error);
+            content.innerHTML = '<div class="info-box"><h4>📋 Task History</h4><p>Đang tải lịch sử tác vụ...</p></div>';
+        }
+    },
+    
     // Toast Notification System
     showToast: function(type, title, message, duration = 5000) {
         const container = document.getElementById('toastContainer');

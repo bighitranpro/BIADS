@@ -1,0 +1,664 @@
+<!-- Task History Page Content -->
+<style>
+    .task-history-container {
+        padding: 20px;
+    }
+
+    .task-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 12px;
+        color: white;
+        text-align: center;
+    }
+
+    .stat-card.pending {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .stat-card.processing {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .stat-card.completed {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .stat-card.failed {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+
+    .stat-number {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .filter-bar {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-bar select,
+    .filter-bar input {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        color: #e0e0e0;
+        font-size: 14px;
+    }
+
+    .filter-bar button {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .filter-bar button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .task-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .task-table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .task-table th,
+    .task-table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .task-table tbody tr {
+        transition: all 0.3s;
+    }
+
+    .task-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .task-status {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .task-status.pending {
+        background: #f5576c;
+        color: white;
+    }
+
+    .task-status.processing {
+        background: #00f2fe;
+        color: #000;
+    }
+
+    .task-status.completed {
+        background: #43e97b;
+        color: #000;
+    }
+
+    .task-status.failed {
+        background: #fee140;
+        color: #000;
+    }
+
+    .task-status.cancelled {
+        background: #888;
+        color: white;
+    }
+
+    .task-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .task-actions button {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+
+    .btn-chrome {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+        transition: width 0.3s;
+    }
+
+    .chrome-sessions {
+        margin-top: 30px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    .chrome-session-card {
+        background: rgba(255, 255, 255, 0.08);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .session-info {
+        flex: 1;
+    }
+
+    .session-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-right: 8px;
+    }
+
+    .session-badge.headless {
+        background: #667eea;
+        color: white;
+    }
+
+    .session-badge.visible {
+        background: #43e97b;
+        color: #000;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #888;
+    }
+
+    .empty-state-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="task-history-container">
+    <!-- Stats -->
+    <div class="task-stats">
+        <div class="stat-card">
+            <div class="stat-number" id="statTotal">0</div>
+            <div class="stat-label">Tổng tác vụ</div>
+        </div>
+        <div class="stat-card pending">
+            <div class="stat-number" id="statPending">0</div>
+            <div class="stat-label">Chờ xử lý</div>
+        </div>
+        <div class="stat-card processing">
+            <div class="stat-number" id="statProcessing">0</div>
+            <div class="stat-label">Đang chạy</div>
+        </div>
+        <div class="stat-card completed">
+            <div class="stat-number" id="statCompleted">0</div>
+            <div class="stat-label">Hoàn thành</div>
+        </div>
+        <div class="stat-card failed">
+            <div class="stat-number" id="statFailed">0</div>
+            <div class="stat-label">Thất bại</div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <select id="filterStatus">
+            <option value="">Tất cả trạng thái</option>
+            <option value="pending">Chờ xử lý</option>
+            <option value="processing">Đang chạy</option>
+            <option value="completed">Hoàn thành</option>
+            <option value="failed">Thất bại</option>
+            <option value="cancelled">Đã hủy</option>
+        </select>
+
+        <select id="filterTaskType">
+            <option value="">Tất cả loại tác vụ</option>
+            <option value="join_groups">Tham gia nhóm</option>
+            <option value="add_friends">Kết bạn</option>
+            <option value="post_content">Đăng bài</option>
+            <option value="comment">Bình luận</option>
+            <option value="react">Thả cảm xúc</option>
+        </select>
+
+        <button onclick="taskHistory.loadTasks()">🔍 Lọc</button>
+        <button onclick="taskHistory.refreshTasks()">🔄 Làm mới</button>
+        <button onclick="taskHistory.clearHistory()">🗑️ Xóa lịch sử</button>
+    </div>
+
+    <!-- Task Table -->
+    <div style="overflow-x: auto;">
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Task ID</th>
+                    <th>Tài khoản</th>
+                    <th>Loại tác vụ</th>
+                    <th>Trạng thái</th>
+                    <th>Tiến độ</th>
+                    <th>Thời gian</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="taskTableBody">
+                <tr>
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <h3>Đang tải lịch sử tác vụ...</h3>
+                            <p>Vui lòng đợi trong giây lát</p>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Chrome Sessions -->
+    <div class="chrome-sessions">
+        <h3 style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <span>🌐 Chrome Sessions đang hoạt động</span>
+            <button class="filter-bar button" onclick="taskHistory.closeAllChrome()" style="padding: 6px 12px; font-size: 13px;">
+                Đóng tất cả
+            </button>
+        </h3>
+        <div id="chromeSessionsContainer">
+            <div class="empty-state" style="padding: 30px;">
+                <div class="empty-state-icon" style="font-size: 48px;">🔍</div>
+                <p>Chưa có Chrome session nào đang hoạt động</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const taskHistory = {
+        tasks: [],
+        chromeSessions: [],
+
+        async init() {
+            await this.loadStats();
+            await this.loadTasks();
+            await this.loadChromeSessions();
+
+            // Auto refresh every 5 seconds
+            setInterval(() => {
+                this.loadStats();
+                this.loadChromeSessions();
+            }, 5000);
+        },
+
+        async loadStats() {
+            try {
+                const response = await fetch('http://localhost:8000/api/tasks/stats');
+                const data = await response.json();
+
+                if (data.success) {
+                    const stats = data.stats;
+                    document.getElementById('statTotal').textContent = stats.total;
+                    document.getElementById('statPending').textContent = stats.pending;
+                    document.getElementById('statProcessing').textContent = stats.processing;
+                    document.getElementById('statCompleted').textContent = stats.completed;
+                    document.getElementById('statFailed').textContent = stats.failed;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        },
+
+        async loadTasks() {
+            try {
+                const status = document.getElementById('filterStatus').value;
+                const taskType = document.getElementById('filterTaskType').value;
+
+                let url = 'http://localhost:8000/api/tasks/history?limit=50';
+                if (status) url += `&status=${status}`;
+                if (taskType) url += `&task_type=${taskType}`;
+
+                const response = await fetch(url);
+                const tasks = await response.json();
+
+                this.tasks = tasks;
+                this.renderTasks();
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+                BiAds.showToast('error', 'Lỗi tải lịch sử', error.message);
+            }
+        },
+
+        renderTasks() {
+            const tbody = document.getElementById('taskTableBody');
+
+            if (this.tasks.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <h3>Chưa có tác vụ nào</h3>
+                                <p>Lịch sử tác vụ sẽ hiển thị tại đây</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = this.tasks.map((task, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><code>${task.task_id.substring(0, 8)}...</code></td>
+                    <td>
+                        <div>${task.account_name || 'N/A'}</div>
+                        <small style="color: #888;">${task.account_uid}</small>
+                    </td>
+                    <td>${this.getTaskTypeName(task.task_type)}</td>
+                    <td><span class="task-status ${task.status}">${this.getStatusName(task.status)}</span></td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${task.progress}%"></div>
+                        </div>
+                        <small>${task.progress}%</small>
+                    </td>
+                    <td>
+                        <small>${new Date(task.created_at).toLocaleString('vi-VN')}</small>
+                    </td>
+                    <td>
+                        <div class="task-actions">
+                            <button class="btn-view" onclick="taskHistory.viewTask('${task.task_id}')">
+                                👁️ Xem
+                            </button>
+                            <button class="btn-chrome" onclick="taskHistory.openChrome(${task.account_id})">
+                                🌐 Chrome
+                            </button>
+                            <button class="btn-delete" onclick="taskHistory.deleteTask('${task.task_id}')">
+                                🗑️
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        },
+
+        async loadChromeSessions() {
+            try {
+                const response = await fetch('http://localhost:8000/api/tasks/chrome/sessions');
+                const sessions = await response.json();
+
+                this.chromeSessions = sessions;
+                this.renderChromeSessions();
+            } catch (error) {
+                console.error('Error loading Chrome sessions:', error);
+            }
+        },
+
+        renderChromeSessions() {
+            const container = document.getElementById('chromeSessionsContainer');
+
+            if (this.chromeSessions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="padding: 30px;">
+                        <div class="empty-state-icon" style="font-size: 48px;">🔍</div>
+                        <p>Chưa có Chrome session nào đang hoạt động</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = this.chromeSessions.map(session => `
+                <div class="chrome-session-card">
+                    <div class="session-info">
+                        <div>
+                            <span class="session-badge ${session.is_headless ? 'headless' : 'visible'}">
+                                ${session.is_headless ? '👁️‍🗨️ Headless' : '👁️ Visible'}
+                            </span>
+                            <strong>${session.account_uid}</strong>
+                            ${session.has_proxy ? `🌐 ${session.proxy_ip}` : ''}
+                        </div>
+                        <small style="color: #888;">
+                            Status: ${session.status} | 
+                            Created: ${new Date(session.created_at).toLocaleTimeString('vi-VN')}
+                        </small>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn-view" onclick="taskHistory.toggleChrome(${session.account_id})">
+                            ${session.is_headless ? '👁️ Mở' : '👁️‍🗨️ Ẩn'}
+                        </button>
+                        <button class="btn-delete" onclick="taskHistory.closeChrome(${session.account_id})">
+                            ❌ Đóng
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        },
+
+        async openChrome(accountId) {
+            try {
+                BiAds.showLoading('Đang khởi động Chrome...', 'Vui lòng đợi');
+
+                const response = await fetch('http://localhost:8000/api/tasks/chrome/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ account_id: accountId, headless: true })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    BiAds.showToast('success', 'Chrome đã khởi động', `Account: ${data.account_uid}`);
+                    await this.loadChromeSessions();
+                } else {
+                    throw new Error(data.detail || 'Failed to open Chrome');
+                }
+            } catch (error) {
+                BiAds.showToast('error', 'Lỗi mở Chrome', error.message);
+            }
+        },
+
+        async toggleChrome(accountId) {
+            try {
+                const response = await fetch(`http://localhost:8000/api/tasks/chrome/toggle/${accountId}`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    BiAds.showToast('success', 'Đã chuyển đổi', data.message);
+                    await this.loadChromeSessions();
+                }
+            } catch (error) {
+                BiAds.showToast('error', 'Lỗi toggle Chrome', error.message);
+            }
+        },
+
+        async closeChrome(accountId) {
+            try {
+                const response = await fetch(`http://localhost:8000/api/tasks/chrome/session/${accountId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    BiAds.showToast('success', 'Đã đóng Chrome', data.message);
+                    await this.loadChromeSessions();
+                }
+            } catch (error) {
+                BiAds.showToast('error', 'Lỗi đóng Chrome', error.message);
+            }
+        },
+
+        async closeAllChrome() {
+            if (!confirm('Đóng tất cả Chrome sessions?')) return;
+
+            try {
+                const response = await fetch('http://localhost:8000/api/tasks/chrome/close-all', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    BiAds.showToast('success', 'Đã đóng tất cả', data.message);
+                    await this.loadChromeSessions();
+                }
+            } catch (error) {
+                BiAds.showToast('error', 'Lỗi', error.message);
+            }
+        },
+
+        async viewTask(taskId) {
+            try {
+                const response = await fetch(`http://localhost:8000/api/tasks/history/${taskId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const task = data.task;
+                    BiAds.showToast('info', 'Chi tiết tác vụ', 
+                        `Type: ${task.task_type}\nStatus: ${task.status}\nProgress: ${task.progress}%`);
+                }
+            } catch (error) {
+                BiAds.showToast('error', 'Lỗi xem chi tiết', error.message);
+            }
+        },
+
+        async deleteTask(taskId) {
+            if (!confirm('Xóa tác vụ này khỏi lịch sử?')) return;
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/tasks/history/${taskId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    BiAds.showToast('success', 'Đã xóa', 'Tác vụ đã được xóa khỏi lịch sử');
+                    await this.loadTasks();
+                    await this.loadStats();
+                }
+            } catch (error) {
+                BiAds.showToast('error', 'Lỗi xóa tác vụ', error.message);
+            }
+        },
+
+        async clearHistory() {
+            if (!confirm('Xóa toàn bộ lịch sử tác vụ? Hành động này không thể hoàn tác!')) return;
+
+            try {
+                const response = await fetch('http://localhost:8000/api/tasks/history/clear', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    BiAds.showToast('success', 'Đã xóa', `${data.count} tác vụ đã được xóa`);
+                    await this.loadTasks();
+                    await this.loadStats();
+                }
+            } catch (error) {
+                BiAds.showToast('error', 'Lỗi xóa lịch sử', error.message);
+            }
+        },
+
+        refreshTasks() {
+            this.loadStats();
+            this.loadTasks();
+            this.loadChromeSessions();
+            BiAds.showToast('info', 'Đã làm mới', 'Lịch sử và sessions đã được cập nhật');
+        },
+
+        getTaskTypeName(type) {
+            const names = {
+                'join_groups': 'Tham gia nhóm',
+                'add_friends': 'Kết bạn',
+                'post_content': 'Đăng bài',
+                'comment': 'Bình luận',
+                'react': 'Thả cảm xúc'
+            };
+            return names[type] || type;
+        },
+
+        getStatusName(status) {
+            const names = {
+                'pending': 'Chờ xử lý',
+                'processing': 'Đang chạy',
+                'completed': 'Hoàn thành',
+                'failed': 'Thất bại',
+                'cancelled': 'Đã hủy'
+            };
+            return names[status] || status;
+        }
+    };
+
+    // Auto-init when page loads
+    setTimeout(() => taskHistory.init(), 100);
+</script>

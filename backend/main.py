@@ -97,12 +97,14 @@ app.add_middleware(
 from api.advanced_api import router as advanced_router
 from api.settings_api import router as settings_router
 from api.facebook_tasks_api import router as facebook_tasks_router
+from api.task_manager_api import router as task_manager_router
 from api.account_interactions_api import router as interactions_router
 
 app.include_router(advanced_router)
 app.include_router(settings_router)
 app.include_router(facebook_tasks_router)
 app.include_router(interactions_router)
+app.include_router(task_manager_router)
 
 # ============================================
 # PYDANTIC MODELS
