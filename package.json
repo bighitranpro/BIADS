@@ -1,30 +1,34 @@
 {
-  "name": "electron-app",
-  "version": "1.0.0",
-  "description": "Ứng dụng ElectronJS đa nền tảng",
+  "name": "bi-ads-multi-tool-pro",
+  "version": "3.0.0",
+  "description": "Bi Ads - Multi Tool GUI PRO v3.0 - Công cụ tự động hóa Facebook với Webhook & Telegram",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --debug",
+    "backend": "cd backend && python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "start:all": "concurrently \"npm run backend\" \"npm run start\"",
     "build": "electron-builder",
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux"
   },
   "keywords": [
-    "electron",
-    "desktop",
-    "app"
+    "bi-ads",
+    "facebook",
+    "automation",
+    "multi-tool",
+    "electron"
   ],
-  "author": "Your Name",
+  "author": "Bi Ads Team",
   "license": "MIT",
   "devDependencies": {
     "electron": "^39.2.0",
     "electron-builder": "^26.0.12"
   },
   "build": {
-    "appId": "com.electron.app",
-    "productName": "ElectronApp",
+    "appId": "com.biads.multitool",
+    "productName": "Bi Ads Multi Tool PRO",
     "directories": {
       "output": "dist"
     },

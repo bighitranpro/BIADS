@@ -1,0 +1,491 @@
+<!-- Plugins Page Content -->
+<div class="plugins-container">
+    <div class="plugins-header">
+        <h2>🔌 Quản lý Plugin</h2>
+        <div class="header-actions">
+            <button class="btn-secondary" onclick="pluginManager.refreshPlugins()">
+                🔄 Làm mới
+            </button>
+            <button class="btn-primary" onclick="pluginManager.showInstallDialog()">
+                ➕ Cài đặt plugin
+            </button>
+        </div>
+    </div>
+
+    <!-- Plugin Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" id="totalPlugins">0</div>
+            <div class="stat-label">Tổng số plugin</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="activePlugins">0</div>
+            <div class="stat-label">Plugin đang chạy</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="availableUpdates">0</div>
+            <div class="stat-label">Cập nhật có sẵn</div>
+        </div>
+    </div>
+
+    <!-- Installed Plugins -->
+    <div class="plugins-section">
+        <h3>📦 Plugin đã cài đặt</h3>
+        <div class="plugins-grid" id="installedPlugins">
+            <!-- Plugins will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Plugin Store -->
+    <div class="plugins-section">
+        <h3>🛒 Plugin Store</h3>
+        <div class="search-bar">
+            <input type="text" id="pluginSearch" placeholder="🔍 Tìm kiếm plugin...">
+            <select id="pluginCategory">
+                <option value="">Tất cả danh mục</option>
+                <option value="automation">Automation</option>
+                <option value="analytics">Analytics</option>
+                <option value="integration">Integration</option>
+                <option value="utility">Utility</option>
+            </select>
+        </div>
+        <div class="plugins-grid" id="pluginStore">
+            <!-- Available plugins -->
+        </div>
+    </div>
+</div>
+
+<!-- Plugin Card Template -->
+<template id="pluginCardTemplate">
+    <div class="plugin-card">
+        <div class="plugin-icon">🔌</div>
+        <div class="plugin-info">
+            <h4 class="plugin-name"></h4>
+            <p class="plugin-description"></p>
+            <div class="plugin-meta">
+                <span class="plugin-version"></span>
+                <span class="plugin-author"></span>
+            </div>
+        </div>
+        <div class="plugin-actions">
+            <button class="btn-plugin-action"></button>
+        </div>
+        <div class="plugin-status"></div>
+    </div>
+</template>
+
+<style>
+.plugins-container {
+    padding: 20px;
+}
+
+.plugins-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.plugins-header h2 {
+    font-size: 24px;
+    color: #fff;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.plugins-section {
+    margin-bottom: 40px;
+}
+
+.plugins-section h3 {
+    font-size: 18px;
+    color: #fff;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.plugins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.plugin-card {
+    background: #1a1a2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.plugin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    border-color: #667eea;
+}
+
+.plugin-icon {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.plugin-info {
+    margin-bottom: 15px;
+}
+
+.plugin-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.plugin-description {
+    font-size: 13px;
+    color: #888;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+.plugin-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: #666;
+}
+
+.plugin-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn-plugin-action {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-enable {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: #fff;
+}
+
+.btn-disable {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: #fff;
+}
+
+.btn-install {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+}
+
+.btn-update {
+    background: linear-gradient(135deg, #fa709a, #fee140);
+    color: #fff;
+}
+
+.plugin-status {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-active {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    border: 1px solid #2ecc71;
+}
+
+.status-inactive {
+    background: rgba(149, 165, 166, 0.2);
+    color: #95a5a6;
+    border: 1px solid #95a5a6;
+}
+
+.status-update-available {
+    background: rgba(243, 156, 18, 0.2);
+    color: #f39c12;
+    border: 1px solid #f39c12;
+}
+
+.search-bar {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 14px;
+}
+
+.search-bar select {
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 14px;
+    cursor: pointer;
+}
+</style>
+
+<script>
+const pluginManager = {
+    // Sample plugin data
+    installedPlugins: [
+        {
+            id: 'auto-poster',
+            name: 'Auto Poster Pro',
+            description: 'Tự động đăng bài theo lịch với nội dung AI-generated',
+            version: '1.2.0',
+            author: 'Bi Ads Team',
+            icon: '📝',
+            status: 'active',
+            category: 'automation'
+        },
+        {
+            id: 'analytics-dashboard',
+            name: 'Analytics Dashboard',
+            description: 'Thống kê chi tiết về hiệu suất tài khoản và campaigns',
+            version: '2.0.1',
+            author: 'Bi Ads Team',
+            icon: '📊',
+            status: 'active',
+            category: 'analytics'
+        },
+        {
+            id: 'comment-bot',
+            name: 'Smart Comment Bot',
+            description: 'Bot tự động comment với AI để tạo engagement tự nhiên',
+            version: '1.5.3',
+            author: 'Bi Ads Team',
+            icon: '💬',
+            status: 'inactive',
+            category: 'automation'
+        }
+    ],
+
+    availablePlugins: [
+        {
+            id: 'content-generator',
+            name: 'AI Content Generator',
+            description: 'Tạo nội dung bài viết tự động bằng AI GPT-4',
+            version: '1.0.0',
+            author: 'Community',
+            icon: '🤖',
+            category: 'utility',
+            downloads: 1240,
+            rating: 4.8
+        },
+        {
+            id: 'hashtag-optimizer',
+            name: 'Hashtag Optimizer',
+            description: 'Tối ưu hashtag để tăng reach và engagement',
+            version: '1.1.2',
+            author: 'Community',
+            icon: '#️⃣',
+            category: 'utility',
+            downloads: 890,
+            rating: 4.5
+        },
+        {
+            id: 'competitor-tracker',
+            name: 'Competitor Tracker',
+            description: 'Theo dõi hoạt động của đối thủ cạnh tranh',
+            version: '2.1.0',
+            author: 'Pro User',
+            icon: '🔍',
+            category: 'analytics',
+            downloads: 2100,
+            rating: 4.9
+        }
+    ],
+
+    init() {
+        this.renderInstalledPlugins();
+        this.renderPluginStore();
+        this.updateStats();
+        this.setupEventListeners();
+    },
+
+    renderInstalledPlugins() {
+        const container = document.getElementById('installedPlugins');
+        container.innerHTML = '';
+
+        this.installedPlugins.forEach(plugin => {
+            const card = this.createPluginCard(plugin, true);
+            container.appendChild(card);
+        });
+    },
+
+    renderPluginStore() {
+        const container = document.getElementById('pluginStore');
+        container.innerHTML = '';
+
+        this.availablePlugins.forEach(plugin => {
+            const card = this.createPluginCard(plugin, false);
+            container.appendChild(card);
+        });
+    },
+
+    createPluginCard(plugin, isInstalled) {
+        const card = document.createElement('div');
+        card.className = 'plugin-card';
+
+        const statusClass = plugin.status === 'active' ? 'status-active' : 
+                           plugin.status === 'inactive' ? 'status-inactive' : '';
+
+        card.innerHTML = `
+            <div class="plugin-icon">${plugin.icon}</div>
+            <div class="plugin-info">
+                <h4 class="plugin-name">${plugin.name}</h4>
+                <p class="plugin-description">${plugin.description}</p>
+                <div class="plugin-meta">
+                    <span class="plugin-version">v${plugin.version}</span>
+                    <span class="plugin-author">by ${plugin.author}</span>
+                    ${plugin.downloads ? `<span>⬇️ ${plugin.downloads}</span>` : ''}
+                    ${plugin.rating ? `<span>⭐ ${plugin.rating}</span>` : ''}
+                </div>
+            </div>
+            <div class="plugin-actions">
+                ${isInstalled ? 
+                    `<button class="btn-plugin-action ${plugin.status === 'active' ? 'btn-disable' : 'btn-enable'}" 
+                             onclick="pluginManager.togglePlugin('${plugin.id}')">
+                        ${plugin.status === 'active' ? '⏸️ Tắt' : '▶️ Bật'}
+                     </button>
+                     <button class="btn-plugin-action btn-update" onclick="pluginManager.updatePlugin('${plugin.id}')">
+                        🔄 Cập nhật
+                     </button>` :
+                    `<button class="btn-plugin-action btn-install" onclick="pluginManager.installPlugin('${plugin.id}')">
+                        📥 Cài đặt
+                     </button>`
+                }
+            </div>
+            ${isInstalled ? `<div class="plugin-status ${statusClass}">${plugin.status === 'active' ? 'Active' : 'Inactive'}</div>` : ''}
+        `;
+
+        return card;
+    },
+
+    togglePlugin(pluginId) {
+        const plugin = this.installedPlugins.find(p => p.id === pluginId);
+        if (plugin) {
+            plugin.status = plugin.status === 'active' ? 'inactive' : 'active';
+            this.renderInstalledPlugins();
+            this.updateStats();
+            app.addLog('success', `Plugin ${plugin.name} đã ${plugin.status === 'active' ? 'bật' : 'tắt'}`);
+        }
+    },
+
+    async installPlugin(pluginId) {
+        const plugin = this.availablePlugins.find(p => p.id === pluginId);
+        if (plugin) {
+            app.addLog('info', `Đang cài đặt plugin ${plugin.name}...`);
+            
+            // Simulate installation
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            this.installedPlugins.push({
+                ...plugin,
+                status: 'inactive'
+            });
+            
+            this.renderInstalledPlugins();
+            this.updateStats();
+            app.addLog('success', `Đã cài đặt plugin ${plugin.name} thành công`);
+        }
+    },
+
+    async updatePlugin(pluginId) {
+        const plugin = this.installedPlugins.find(p => p.id === pluginId);
+        if (plugin) {
+            app.addLog('info', `Đang cập nhật plugin ${plugin.name}...`);
+            
+            // Simulate update
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            app.addLog('success', `Đã cập nhật plugin ${plugin.name} thành công`);
+        }
+    },
+
+    updateStats() {
+        document.getElementById('totalPlugins').textContent = this.installedPlugins.length;
+        document.getElementById('activePlugins').textContent = 
+            this.installedPlugins.filter(p => p.status === 'active').length;
+        document.getElementById('availableUpdates').textContent = 
+            Math.floor(Math.random() * 3); // Simulate updates
+    },
+
+    setupEventListeners() {
+        // Search functionality
+        document.getElementById('pluginSearch').addEventListener('input', (e) => {
+            this.filterPlugins(e.target.value, document.getElementById('pluginCategory').value);
+        });
+
+        document.getElementById('pluginCategory').addEventListener('change', (e) => {
+            this.filterPlugins(document.getElementById('pluginSearch').value, e.target.value);
+        });
+    },
+
+    filterPlugins(searchTerm, category) {
+        let filtered = this.availablePlugins;
+
+        if (searchTerm) {
+            filtered = filtered.filter(p => 
+                p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                p.description.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        if (category) {
+            filtered = filtered.filter(p => p.category === category);
+        }
+
+        const container = document.getElementById('pluginStore');
+        container.innerHTML = '';
+        filtered.forEach(plugin => {
+            const card = this.createPluginCard(plugin, false);
+            container.appendChild(card);
+        });
+    },
+
+    refreshPlugins() {
+        app.addLog('info', 'Đang làm mới danh sách plugin...');
+        this.renderInstalledPlugins();
+        this.renderPluginStore();
+        this.updateStats();
+        app.addLog('success', 'Đã làm mới danh sách plugin');
+    },
+
+    showInstallDialog() {
+        app.addLog('info', 'Mở Plugin Store để cài đặt plugin mới');
+        document.querySelector('.plugins-section:last-child').scrollIntoView({ behavior: 'smooth' });
+    }
+};
+
+// Initialize plugin manager
+pluginManager.init();
+</script>

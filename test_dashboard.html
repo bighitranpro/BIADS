@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bi Ads - Dashboard Test</title>
+    <link rel="stylesheet" href="renderer/styles.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .test-info {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .test-info h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .test-info ul {
+            list-style: none;
+            padding: 0;
+        }
+        .test-info li {
+            padding: 5px 0;
+            color: #e0e0e0;
+        }
+        .test-info code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #38ef7d;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>🧪 Bi Ads Dashboard - Integration Test</h1>
+        <p>Testing dashboard functionality with live backend</p>
+    </div>
+
+    <div class="test-info">
+        <h3>📡 Backend Connection</h3>
+        <ul>
+            <li><strong>Backend URL:</strong> <code id="backendUrl">http://localhost:8000</code></li>
+            <li><strong>Status:</strong> <span id="backendStatusText">Checking...</span></li>
+            <li><strong>Database:</strong> <span id="dbStatus">Checking...</span></li>
+        </ul>
+    </div>
+
+    <div id="dashboardContainer"></div>
+
+    <!-- Scripts -->
+    <script src="renderer/api-client.js"></script>
+    <script src="renderer/dashboard.js"></script>
+    <script>
+        // Test backend connection
+        async function testBackend() {
+            try {
+                const response = await fetch('http://localhost:8000/health');
+                const data = await response.json();
+                
+                document.getElementById('backendStatusText').innerHTML = 
+                    `<span style="color: #38ef7d;">✅ ${data.status.toUpperCase()}</span>`;
+                document.getElementById('dbStatus').innerHTML = 
+                    `<span style="color: #38ef7d;">✅ ${data.database.toUpperCase()}</span>`;
+                
+                console.log('✅ Backend health check:', data);
+            } catch (error) {
+                document.getElementById('backendStatusText').innerHTML = 
+                    `<span style="color: #f45c43;">❌ OFFLINE</span>`;
+                document.getElementById('dbStatus').innerHTML = 
+                    `<span style="color: #f45c43;">❌ OFFLINE</span>`;
+                console.error('❌ Backend connection failed:', error);
+            }
+        }
+
+        // Initialize dashboard
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Initializing dashboard test...');
+            
+            // Test backend
+            testBackend();
+            
+            // Render dashboard
+            const container = document.getElementById('dashboardContainer');
+            Dashboard.render(container);
+            Dashboard.init();
+            
+            console.log('✅ Dashboard initialized successfully!');
+        });
+
+        // Global BiAds object for dashboard compatibility
+        window.BiAds = {
+            checkAccountStatus: async function(accountId) {
+                console.log('🔍 Checking account status:', accountId);
+                try {
+                    const result = await apiClient.checkAccountStatus(accountId);
+                    alert(`Account ${accountId}:\n${result.is_live ? '✅ LIVE' : '❌ DIE'}\n${result.reason}`);
+                } catch (error) {
+                    alert('❌ Error: ' + error.message);
+                }
+            },
+            
+            showAssignProxyModal: function(accountId) {
+                alert('🌐 Proxy assignment for account ' + accountId + ' - Feature coming soon!');
+            },
+            
+            log: function(level, message) {
+                console.log(`[${level.toUpperCase()}] ${message}`);
+            }
+        };
+    </script>
+</body>
+</html>

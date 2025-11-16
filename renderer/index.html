@@ -3,108 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
-    <title>Ứng dụng ElectronJS</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:8000">
+    <title>Bi Ads - Multi Tool PRO v3.0</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1>🚀 Ứng dụng ElectronJS</h1>
-            <p class="subtitle">Ứng dụng desktop đa nền tảng với Electron</p>
-        </header>
+    <div class="app-container">
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="top-nav-brand">
+                <h1>🚀 Bi Ads - Multi Tool PRO v3.0</h1>
+            </div>
+            <div class="top-nav-menu">
+                <button class="top-nav-item" data-page="dashboard">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="top-nav-item" data-page="accounts">
+                    <span class="icon">👤</span>
+                    <span>Quản lý tài khoản</span>
+                </button>
+                <button class="top-nav-item" data-page="proxy">
+                    <span class="icon">🌐</span>
+                    <span>Quản lý proxy</span>
+                </button>
+                <button class="top-nav-item" data-page="sub-accounts">
+                    <span class="icon">👥</span>
+                    <span>Quản lý tài khoản phụ</span>
+                </button>
+                <button class="top-nav-item" data-page="ids">
+                    <span class="icon">🆔</span>
+                    <span>Quản lý ID</span>
+                </button>
+                <button class="top-nav-item" data-page="ips">
+                    <span class="icon">📡</span>
+                    <span>Quản lý IP thiết bị</span>
+                </button>
+                <button class="top-nav-item" data-page="whitelist">
+                    <span class="icon">✅</span>
+                    <span>Quản lý tài khoản whitelist</span>
+                </button>
+                <button class="top-nav-item" data-page="posts">
+                    <span class="icon">📝</span>
+                    <span>Quản lý bài viết đã đăng</span>
+                </button>
+                <button class="top-nav-item" data-page="messages">
+                    <span class="icon">💬</span>
+                    <span>Quản lý tin nhắn</span>
+                </button>
+                <button class="top-nav-item" data-page="settings">
+                    <span class="icon">⚙️</span>
+                    <span>Cài đặt hệ thống</span>
+                </button>
+                <button class="top-nav-item" onclick="BiAds.loadPluginsPage()">
+                    <span class="icon">🔌</span>
+                    <span>Plugins</span>
+                </button>
+                <button class="top-nav-item" onclick="BiAds.loadHelpPage()">
+                    <span class="icon">❓</span>
+                    <span>Trợ giúp</span>
+                </button>
+            </div>
+            <div class="top-nav-status">
+                <div class="backend-status" id="backendStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Đang kết nối...</span>
+                </div>
+            </div>
+        </nav>
 
         <!-- Main Content -->
-        <main class="main-content">
-            <!-- Info Section -->
-            <section class="card">
-                <h2>📋 Thông tin ứng dụng</h2>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <span class="label">Phiên bản:</span>
-                        <span class="value" id="app-version">Đang tải...</span>
+        <div class="main-wrapper">
+            <!-- Sidebar with Task Categories -->
+            <aside class="sidebar-tasks">
+                <div class="sidebar-section">
+                    <div class="section-header">
+                        <span class="icon">🏢</span>
+                        <h3>Tác vụ Group</h3>
                     </div>
-                    <div class="info-item">
-                        <span class="label">Đường dẫn:</span>
-                        <span class="value" id="app-path">Đang tải...</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Hệ điều hành:</span>
-                        <span class="value" id="platform">Đang tải...</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Node.js:</span>
-                        <span class="value" id="node-version">Đang tải...</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Chrome:</span>
-                        <span class="value" id="chrome-version">Đang tải...</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="label">Electron:</span>
-                        <span class="value" id="electron-version">Đang tải...</span>
+                    <div class="section-content">
+                        <button class="task-item" data-task="groups-joined">
+                            <span class="icon">📋</span>
+                            <span>Nhóm đã tham gia</span>
+                        </button>
+                        <button class="task-item" data-task="scan-groups">
+                            <span class="icon">🔍</span>
+                            <span>Quét nhóm theo từ khóa</span>
+                        </button>
+                        <button class="task-item" data-task="join-groups">
+                            <span class="icon">➕</span>
+                            <span>Tham gia nhóm</span>
+                        </button>
+                        <button class="task-item" data-task="leave-groups">
+                            <span class="icon">🚪</span>
+                            <span>Rời nhóm</span>
+                        </button>
+                        <button class="task-item" data-task="invite-to-group">
+                            <span class="icon">👋</span>
+                            <span>Mời bạn bè vào nhóm</span>
+                        </button>
                     </div>
                 </div>
-            </section>
 
-            <!-- Features Section -->
-            <section class="card">
-                <h2>⚡ Chức năng</h2>
-                <div class="features-grid">
-                    <button class="feature-btn" id="btn-show-message">
+                <div class="sidebar-section">
+                    <div class="section-header">
                         <span class="icon">💬</span>
-                        <span class="text">Hiển thị thông báo</span>
-                    </button>
-                    <button class="feature-btn" id="btn-open-file">
-                        <span class="icon">📂</span>
-                        <span class="text">Mở file</span>
-                    </button>
-                    <button class="feature-btn" id="btn-save-file">
-                        <span class="icon">💾</span>
-                        <span class="text">Lưu file</span>
-                    </button>
-                    <button class="feature-btn" id="btn-get-info">
-                        <span class="icon">ℹ️</span>
-                        <span class="text">Cập nhật thông tin</span>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Demo Section -->
-            <section class="card">
-                <h2>🎨 Demo</h2>
-                <div class="demo-section">
-                    <div class="input-group">
-                        <label for="demo-input">Nhập văn bản:</label>
-                        <input type="text" id="demo-input" placeholder="Nhập nội dung..." />
+                        <h3>Tác vụ tương tác tài khoản</h3>
                     </div>
-                    <div class="input-group">
-                        <label for="demo-textarea">Ghi chú:</label>
-                        <textarea id="demo-textarea" rows="4" placeholder="Nhập ghi chú của bạn..."></textarea>
-                    </div>
-                    <div class="button-group">
-                        <button class="btn-primary" id="btn-clear">Xóa</button>
-                        <button class="btn-secondary" id="btn-save">Lưu</button>
+                    <div class="section-content">
+                        <button class="task-item" data-task="post-status">
+                            <span class="icon">✍️</span>
+                            <span>Đăng bài viết</span>
+                        </button>
+                        <button class="task-item" data-task="share-post">
+                            <span class="icon">🔗</span>
+                            <span>Cắm link bài viết</span>
+                        </button>
+                        <button class="task-item" data-task="comment-post">
+                            <span class="icon">💬</span>
+                            <span>Bình luận bài viết</span>
+                        </button>
+                        <button class="task-item" data-task="auto-like">
+                            <span class="icon">❤️</span>
+                            <span>Tự động like bài viết/comment</span>
+                        </button>
+                        <button class="task-item" data-task="share-post-2">
+                            <span class="icon">📤</span>
+                            <span>Chia sẻ bài viết</span>
+                        </button>
+                        <button class="task-item" data-task="update-bio">
+                            <span class="icon">📝</span>
+                            <span>Update bio viết</span>
+                        </button>
+                        <button class="task-item" data-task="hide-notif">
+                            <span class="icon">🔕</span>
+                            <span>Tự động ẩn thông báo</span>
+                        </button>
+                        <button class="task-item" data-task="auto-view-news">
+                            <span class="icon">📰</span>
+                            <span>Tự động xem tin [Newsfeed]</span>
+                        </button>
+                        <button class="task-item" data-task="auto-watch-video">
+                            <span class="icon">▶️</span>
+                            <span>Tự động xem video</span>
+                        </button>
+                        <button class="task-item" data-task="delete-post">
+                            <span class="icon">🗑️</span>
+                            <span>Xóa bài viết</span>
+                        </button>
+                        <button class="task-item" data-task="poke-friends">
+                            <span class="icon">👋</span>
+                            <span>Chọc bạn bè</span>
+                        </button>
+                        <button class="task-item" data-task="join-via-uid">
+                            <span class="icon">🔗</span>
+                            <span>Xóa bài viết</span>
+                        </button>
                     </div>
                 </div>
-            </section>
 
-            <!-- Output Section -->
-            <section class="card">
-                <h2>📝 Kết quả</h2>
-                <div class="output-box" id="output">
-                    <p class="placeholder">Kết quả sẽ hiển thị ở đây...</p>
+                <div class="sidebar-section">
+                    <div class="section-header">
+                        <span class="icon">👥</span>
+                        <h3>Tác vụ bạn bè</h3>
+                    </div>
+                    <div class="section-content">
+                        <button class="task-item" data-task="add-friend">
+                            <span class="icon">➕</span>
+                            <span>Kết bạn</span>
+                        </button>
+                        <button class="task-item" data-task="reject-friend">
+                            <span class="icon">❌</span>
+                            <span>Từ chối lời mời bạn bè gửi</span>
+                        </button>
+                        <button class="task-item" data-task="accept-friend">
+                            <span class="icon">✅</span>
+                            <span>Đồng ý kết bạn gửi đến</span>
+                        </button>
+                        <button class="task-item" data-task="cancel-request">
+                            <span class="icon">🚫</span>
+                            <span>Hủy lời mời kết bạn đã gửi</span>
+                        </button>
+                        <button class="task-item" data-task="unfriend">
+                            <span class="icon">💔</span>
+                            <span>Hủy kết bạn</span>
+                        </button>
+                        <button class="task-item" data-task="send-message">
+                            <span class="icon">✉️</span>
+                            <span>Gửi tin nhắn</span>
+                        </button>
+                        <button class="task-item" data-task="approve-tag">
+                            <span class="icon">🏷️</span>
+                            <span>Duyệt thẻ</span>
+                        </button>
+                    </div>
                 </div>
-            </section>
-        </main>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <p>Được xây dựng với ❤️ sử dụng Electron | © 2024</p>
-        </footer>
+                <div class="sidebar-section">
+                    <div class="section-header">
+                        <span class="icon">📄</span>
+                        <h3>Tác vụ Fanpage</h3>
+                    </div>
+                    <div class="section-content">
+                        <button class="task-item" data-task="manage-fanpage">
+                            <span class="icon">📊</span>
+                            <span>Quản lý fanpage</span>
+                        </button>
+                        <button class="task-item" data-task="interact-fanpage">
+                            <span class="icon">💬</span>
+                            <span>Mở comment & Inbox Fanpage</span>
+                        </button>
+                        <button class="task-item" data-task="edit-fanpage">
+                            <span class="icon">✏️</span>
+                            <span>Tự động chỉnh fanpage</span>
+                        </button>
+                        <button class="task-item" data-task="post-fanpage">
+                            <span class="icon">📝</span>
+                            <span>Đăng bài fanpage</span>
+                        </button>
+                        <button class="task-item" data-task="share-fanpage">
+                            <span class="icon">🔗</span>
+                            <span>Cắm link bài fanpage</span>
+                        </button>
+                        <button class="task-item" data-task="like-fanpage-auto">
+                            <span class="icon">❤️</span>
+                            <span>Tự comment tại wall fanpage</span>
+                        </button>
+                        <button class="task-item" data-task="message-fanpage">
+                            <span class="icon">💬</span>
+                            <span>Gửi tin nhắn</span>
+                        </button>
+                        <button class="task-item" data-task="send-inbox-fanpage">
+                            <span class="icon">📨</span>
+                            <span>Đẩy comment tin nhắn fanpage</span>
+                        </button>
+                        <button class="task-item" data-task="invite-like-fanpage">
+                            <span class="icon">👍</span>
+                            <span>Mời thích fanpage từ UID hoặc bạn bè</span>
+                        </button>
+                        <button class="task-item" data-task="delete-fanpage-post">
+                            <span class="icon">🗑️</span>
+                            <span>Xóa bài viết fanpage</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="section-header">
+                        <span class="icon">📊</span>
+                        <h3>Danh sách đã quét</h3>
+                    </div>
+                    <div class="section-content">
+                        <button class="task-item" data-task="scanned-friend-suggestions">
+                            <span class="icon">👤</span>
+                            <span>Danh sách bạn bè</span>
+                        </button>
+                        <button class="task-item" data-task="scanned-recent-friends">
+                            <span class="icon">🆕</span>
+                            <span>Danh sách bạn bè gợi ý</span>
+                        </button>
+                        <button class="task-item" data-task="scanned-group-members">
+                            <span class="icon">👥</span>
+                            <span>Danh sách bạn bè đã thêm gần đây</span>
+                        </button>
+                        <button class="task-item" data-task="scanned-followers">
+                            <span class="icon">👁️</span>
+                            <span>Danh sách theo dõi</span>
+                        </button>
+                        <button class="task-item" data-task="scanned-uids">
+                            <span class="icon">🔢</span>
+                            <span>Danh sách uid chưa đổi tên</span>
+                        </button>
+                        <button class="task-item" data-task="scanned-posts">
+                            <span class="icon">📝</span>
+                            <span>Danh sách chủ bài viết</span>
+                        </button>
+                        <button class="task-item" data-task="scan-posts-action">
+                            <span class="icon">🔍</span>
+                            <span>Quét bài viết</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <main class="content-area">
+                <div class="content-header">
+                    <h2 id="contentTitle">Chào mừng đến Bi Ads Multi Tool PRO</h2>
+                    <div class="content-actions">
+                        <button class="btn-primary" id="btnStartTask">▶️ Bắt đầu tác vụ</button>
+                        <button class="btn-secondary" id="btnStopTask">⏸️ Dừng tác vụ</button>
+                    </div>
+                </div>
+                
+                <div class="content-body" id="contentBody">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+
+                <!-- Activity Log -->
+                <div class="activity-log-container">
+                    <div class="log-header">
+                        <h3>📋 Nhật ký hoạt động</h3>
+                        <button class="btn-clear-log" onclick="app.clearLog()">🗑️ Xóa log</button>
+                    </div>
+                    <div class="console" id="activityLog">
+                        <div class="console-line">
+                            <span class="console-timestamp">${new Date().toLocaleTimeString('vi-VN')}</span>
+                            <span class="console-level info">[THÔNG TIN]</span>
+                            <span class="console-message">Hệ thống đã sẵn sàng. Chọn tác vụ để bắt đầu.</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
 
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <!-- Scripts -->
     <script src="renderer.js"></script>
+    <script src="api-client.js"></script>
+    <script src="advanced-api-client.js"></script>
+    <script src="file-import.js"></script>
+    <script src="advanced-features.js"></script>
+    <script src="advanced-features-enhanced.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="bi-ads-main.js"></script>
 </body>
 </html>
