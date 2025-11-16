@@ -94,7 +94,7 @@ class ChromeSession:
         else:
             return f"{protocol}://{ip}:{port}"
     
-    async def login_facebook(self, cookies: Optional[str] = None, email: Optional[str] = None, password: Optional[str] = None) -> bool:
+    async def login_facebook(self, cookies: Optional[str] = None, email: Optional[str] = None, password: Optional[str] = None, two_fa_key: Optional[str] = None) -> bool:
         """Login to Facebook using cookies or credentials"""
         try:
             if not self.driver:
@@ -137,6 +137,13 @@ class ChromeSession:
                     
                     await asyncio.sleep(3)
                     
+                    # Check for 2FA prompt
+                    if two_fa_key and self._check_2fa_prompt():
+                        logger.info(f"2FA prompt detected for account {self.account_uid}")
+                        if await self._handle_2fa(two_fa_key):
+                            logger.info(f"2FA handled successfully for account {self.account_uid}")
+                            await asyncio.sleep(2)
+                    
                     if self._is_logged_in():
                         self.status = 'ready'
                         logger.info(f"Account {self.account_uid} logged in successfully with credentials")
@@ -176,7 +183,100 @@ class ChromeSession:
             logger.error(f"Error checking login status: {e}")
             return False
     
-    def toggle_headless(self) -> bool:
+    def _check_2fa_prompt(self) -> bool:
+        """Check if 2FA prompt is shown"""
+        try:
+            # Check for 2FA code input field
+            two_fa_selectors = [
+                "input[name='approvals_code']",
+                "input[id='approvals_code']",
+                "input[placeholder*='code']",
+                "input[placeholder*='mã']"
+            ]
+            
+            for selector in two_fa_selectors:
+                elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                if elements:
+                    logger.info("2FA prompt detected")
+                    return True
+            
+            return False
+            
+        except Exception as e:
+            logger.error(f"Error checking 2FA prompt: {e}")
+            return False
+    
+    async def _handle_2fa(self, two_fa_key: str) -> bool:
+        """Handle 2FA authentication"""
+        try:
+            import pyotp
+            
+            # Generate TOTP code from secret key
+            totp = pyotp.TOTP(two_fa_key)
+            code = totp.now()
+            
+            logger.info(f"Generated 2FA code: {code}")
+            
+            # Find 2FA input field
+            two_fa_selectors = [
+                "input[name='approvals_code']",
+                "input[id='approvals_code']",
+                "input[placeholder*='code']",
+                "input[placeholder*='mã']"
+            ]
+            
+            code_input = None
+            for selector in two_fa_selectors:
+                elements = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                if elements:
+                    code_input = elements[0]
+                    break
+            
+            if not code_input:
+                logger.error("2FA input field not found")
+                return False
+            
+            # Enter 2FA code
+            code_input.clear()
+            code_input.send_keys(code)
+            await asyncio.sleep(1)
+            
+            # Find and click submit button
+            submit_selectors = [
+                "button[name='submit[Continue]']",
+                "button[type='submit']",
+                "button:contains('Continue')",
+                "button:contains('Tiếp tục')",
+                "input[type='submit']"
+            ]
+            
+            for selector in submit_selectors:
+                try:
+                    buttons = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                    if buttons:
+                        buttons[0].click()
+                        logger.info("2FA submit button clicked")
+                        await asyncio.sleep(3)
+                        return True
+                except:
+                    continue
+            
+            # If no submit button found, try pressing Enter
+            from selenium.webdriver.common.keys import Keys
+            code_input.send_keys(Keys.RETURN)
+            logger.info("2FA code submitted via Enter key")
+            await asyncio.sleep(3)
+            
+            return True
+            
+        except ImportError:
+            logger.error("pyotp library not installed. Install with: pip install pyotp")
+            return False
+        except Exception as e:
+            logger.error(f"Error handling 2FA: {e}")
+            return False
+    
+    async def toggle_headless(self) -> bool:
         """Toggle between headless and visible mode"""
         if not self.driver:
             return False
@@ -195,10 +295,17 @@ class ChromeSession:
             
             # Restore session
             self.driver.get('https://www.facebook.com')
-            for cookie in cookies:
-                self.driver.add_cookie(cookie)
+            await asyncio.sleep(1)
             
+            for cookie in cookies:
+                try:
+                    self.driver.add_cookie(cookie)
+                except Exception as e:
+                    logger.warning(f"Failed to add cookie: {e}")
+            
+            await asyncio.sleep(1)
             self.driver.get(current_url)
+            await asyncio.sleep(2)
             
             logger.info(f"Account {self.account_uid} toggled to {'headless' if new_headless else 'visible'} mode")
             return True
@@ -244,6 +351,7 @@ class ChromeManager:
                            cookies: Optional[str] = None, 
                            email: Optional[str] = None, 
                            password: Optional[str] = None,
+                           two_fa_key: Optional[str] = None,
                            proxy: Optional[Dict] = None,
                            headless: bool = True) -> ChromeSession:
         """Create and login a new Chrome session"""
@@ -257,7 +365,7 @@ class ChromeManager:
             session.create_driver(headless=headless)
             
             # Login
-            success = await session.login_facebook(cookies, email, password)
+            success = await session.login_facebook(cookies, email, password, two_fa_key)
             
             if success:
                 self.sessions[account_id] = session

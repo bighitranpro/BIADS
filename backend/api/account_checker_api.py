@@ -73,6 +73,7 @@ async def check_account_task(account_id: int, db: AsyncSession):
             cookies=account.cookies,
             email=account.email,
             password=account.password,
+            two_fa_key=account.two_fa_key,
             proxy=proxy,
             headless=True
         )
