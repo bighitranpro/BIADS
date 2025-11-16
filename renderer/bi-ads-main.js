@@ -877,8 +877,8 @@ const BiAds = {
 
     renderIPsPage: function(content) {
         // Delegate to AdvancedFeatures module
-        if (window.AdvancedFeatures && window.AdvancedFeatures.renderIPsPage) {
-            window.AdvancedFeatures.renderIPsPage(content);
+        if (window.AdvancedFeatures && window.AdvancedFeatures.renderIPManagementPage) {
+            window.AdvancedFeatures.renderIPManagementPage(content);
         } else {
             content.innerHTML = `
                 <div class="card">
@@ -892,7 +892,7 @@ const BiAds = {
     },
 
     renderWhitelistPage: function(content) {
-        // Delegate to AdvancedFeatures module
+        // Delegate to AdvancedFeatures module - Now fully connected to API
         if (window.AdvancedFeatures && window.AdvancedFeatures.renderWhitelistPage) {
             window.AdvancedFeatures.renderWhitelistPage(content);
         } else {

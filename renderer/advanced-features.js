@@ -1568,7 +1568,666 @@ const AdvancedFeatures = {
     refreshMessages: () => app.addLog('info', 'Làm mới tin nhắn'),
     searchConversations: () => app.addLog('info', 'Tìm kiếm hội thoại'),
     sendMessage: () => app.addLog('info', 'Gửi tin nhắn'),
-    saveAutoReplySettings: () => app.addLog('success', 'Đã lưu cài đặt tự động trả lời')
+    saveAutoReplySettings: () => app.addLog('success', 'Đã lưu cài đặt tự động trả lời'),
+    
+    // ============================================
+    // IP MANAGEMENT
+    // ============================================
+    
+    renderIPManagementPage: async function(content) {
+        content.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    🌐 Quản lý IP thiết bị
+                    <div style="float: right;">
+                        <button class="btn-primary" onclick="AdvancedFeatures.detectCurrentIP()">
+                            🔍 Phát hiện IP hiện tại
+                        </button>
+                        <button class="btn-secondary" onclick="AdvancedFeatures.showAddIPModal()">
+                            ➕ Thêm IP
+                        </button>
+                        <button class="btn-success" onclick="AdvancedFeatures.refreshIPs()">
+                            🔄 Làm mới
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="info-box">
+                        <h4>ℹ️ Quản lý IP thiết bị</h4>
+                        <p>Theo dõi và quản lý các địa chỉ IP đã sử dụng để truy cập tài khoản Facebook.</p>
+                        <p><strong>Công dụng:</strong></p>
+                        <ul style="margin-left: 20px; color: #888;">
+                            <li>Phát hiện IP bất thường</li>
+                            <li>Quản lý danh sách IP tin cậy/chặn</li>
+                            <li>Theo dõi vị trí địa lý</li>
+                            <li>Liên kết IP với tài khoản</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="grid-3" style="margin-bottom: 20px;">
+                        <div class="stat-card">
+                            <h4 id="totalIPsCount">0</h4>
+                            <p>Tổng IP</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4 id="trustedIPsCount">0</h4>
+                            <p>IP tin cậy</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4 id="blockedIPsCount">0</h4>
+                            <p>IP bị chặn</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <input type="text" 
+                               id="searchIPInput" 
+                               placeholder="Tìm kiếm theo IP, vị trí..." 
+                               style="width: 300px; margin-right: 10px;"
+                               onkeyup="if(event.key==='Enter') AdvancedFeatures.searchIPs()">
+                        <button class="btn-secondary" onclick="AdvancedFeatures.searchIPs()">🔍 Tìm</button>
+                        <select id="filterIPStatus" onchange="AdvancedFeatures.filterIPs()" style="margin-left: 10px;">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="trusted">Tin cậy</option>
+                            <option value="blocked">Bị chặn</option>
+                        </select>
+                    </div>
+
+                    <div id="ipsList">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Địa chỉ IP</th>
+                                    <th>Vị trí</th>
+                                    <th>ISP</th>
+                                    <th>Tài khoản</th>
+                                    <th>Trạng thái</th>
+                                    <th>Lần truy cập</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ipsTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align: center; padding: 40px; color: #888;">
+                                        <p>Đang tải danh sách IP...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Load data
+        await this.loadIPManagement();
+    },
+    
+    loadIPManagement: async function() {
+        try {
+            // Load stats
+            const statsResponse = await fetch('http://localhost:8000/api/device-ips/stats');
+            if (statsResponse.ok) {
+                const stats = await statsResponse.json();
+                document.getElementById('totalIPsCount').textContent = stats.total_ips;
+                document.getElementById('trustedIPsCount').textContent = stats.trusted_ips;
+                document.getElementById('blockedIPsCount').textContent = stats.blocked_ips;
+            }
+            
+            // Load IPs list
+            const searchValue = document.getElementById('searchIPInput')?.value || '';
+            const statusFilter = document.getElementById('filterIPStatus')?.value || '';
+            
+            let url = 'http://localhost:8000/api/device-ips/?limit=100';
+            if (searchValue) url += `&search=${encodeURIComponent(searchValue)}`;
+            if (statusFilter === 'trusted') url += '&is_trusted=true';
+            if (statusFilter === 'blocked') url += '&is_blocked=true';
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to load IPs');
+            
+            const ips = await response.json();
+            this.renderIPsTable(ips);
+            
+        } catch (error) {
+            console.error('Error loading IPs:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể tải danh sách IP');
+        }
+    },
+    
+    renderIPsTable: function(ips) {
+        const tbody = document.getElementById('ipsTableBody');
+        
+        if (!ips || ips.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #888;">
+                        <p>Chưa có IP nào được theo dõi</p>
+                        <p>Nhấn "🔍 Phát hiện IP hiện tại" để bắt đầu</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = ips.map((ip, index) => {
+            const statusBadge = ip.is_blocked 
+                ? '<span class="badge badge-danger">Chặn</span>'
+                : ip.is_trusted 
+                    ? '<span class="badge badge-success">Tin cậy</span>'
+                    : '<span class="badge badge-warning">Bình thường</span>';
+            
+            const accountInfo = ip.account_info 
+                ? `${ip.account_info.name || ip.account_info.uid}`
+                : '<span style="color: #888;">Chưa liên kết</span>';
+            
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><strong>${ip.ip_address}</strong></td>
+                    <td>${ip.location || 'N/A'}</td>
+                    <td>${ip.isp || 'N/A'}</td>
+                    <td>${accountInfo}</td>
+                    <td>${statusBadge}</td>
+                    <td>${ip.access_count} lần<br><small>${ip.last_used_at ? new Date(ip.last_used_at).toLocaleString('vi-VN') : 'N/A'}</small></td>
+                    <td>
+                        <button class="btn-sm btn-primary" onclick="AdvancedFeatures.editIP(${ip.id})">✏️</button>
+                        <button class="btn-sm btn-danger" onclick="AdvancedFeatures.deleteIP(${ip.id})">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+    
+    detectCurrentIP: async function() {
+        try {
+            BiAds.showToast('info', 'Đang phát hiện', 'Đang phát hiện IP hiện tại...');
+            
+            const response = await fetch('http://localhost:8000/api/device-ips/detect');
+            if (!response.ok) throw new Error('Failed to detect IP');
+            
+            const result = await response.json();
+            
+            if (result.already_exists) {
+                BiAds.showToast('info', 'IP đã tồn tại', `IP ${result.ip_address} đã có trong hệ thống`);
+            } else {
+                BiAds.showToast('success', 'Đã thêm', `IP ${result.ip_address} (${result.location}) đã được thêm vào hệ thống`);
+            }
+            
+            await this.loadIPManagement();
+            
+        } catch (error) {
+            console.error('Error detecting IP:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể phát hiện IP hiện tại');
+        }
+    },
+    
+    showAddIPModal: function() {
+        ModalConfirmation.showInput({
+            title: '➕ Thêm IP mới',
+            message: 'Nhập thông tin địa chỉ IP muốn theo dõi:',
+            inputs: [
+                { id: 'ipAddress', label: 'Địa chỉ IP *', type: 'text', placeholder: '192.168.1.1', required: true },
+                { id: 'location', label: 'Vị trí', type: 'text', placeholder: 'Hanoi, Vietnam' },
+                { id: 'isp', label: 'Nhà cung cấp', type: 'text', placeholder: 'Viettel' },
+                { id: 'notes', label: 'Ghi chú', type: 'textarea', placeholder: 'Ghi chú về IP này...' }
+            ],
+            confirmText: 'Thêm IP',
+            onConfirm: async (values) => {
+                try {
+                    const response = await fetch('http://localhost:8000/api/device-ips/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            ip_address: values.ipAddress,
+                            location: values.location || null,
+                            isp: values.isp || null,
+                            notes: values.notes || null,
+                            is_trusted: true
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to add IP');
+                    }
+                    
+                    BiAds.showToast('success', 'Thành công', 'Đã thêm IP mới');
+                    await AdvancedFeatures.loadIPManagement();
+                    
+                } catch (error) {
+                    console.error('Error adding IP:', error);
+                    BiAds.showToast('error', 'Lỗi', error.message);
+                }
+            }
+        });
+    },
+    
+    editIP: async function(ipId) {
+        try {
+            // Get IP details
+            const response = await fetch(`http://localhost:8000/api/device-ips/${ipId}`);
+            if (!response.ok) throw new Error('Failed to get IP details');
+            
+            const ip = await response.json();
+            
+            ModalConfirmation.showInput({
+                title: '✏️ Chỉnh sửa IP',
+                message: `Chỉnh sửa thông tin IP ${ip.ip_address}:`,
+                inputs: [
+                    { id: 'location', label: 'Vị trí', type: 'text', value: ip.location || '' },
+                    { id: 'isp', label: 'Nhà cung cấp', type: 'text', value: ip.isp || '' },
+                    { id: 'isTrusted', label: 'IP tin cậy', type: 'checkbox', checked: ip.is_trusted },
+                    { id: 'isBlocked', label: 'Chặn IP', type: 'checkbox', checked: ip.is_blocked },
+                    { id: 'notes', label: 'Ghi chú', type: 'textarea', value: ip.notes || '' }
+                ],
+                confirmText: 'Cập nhật',
+                onConfirm: async (values) => {
+                    try {
+                        const updateResponse = await fetch(`http://localhost:8000/api/device-ips/${ipId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                location: values.location || null,
+                                isp: values.isp || null,
+                                is_trusted: values.isTrusted,
+                                is_blocked: values.isBlocked,
+                                notes: values.notes || null
+                            })
+                        });
+                        
+                        if (!updateResponse.ok) throw new Error('Failed to update IP');
+                        
+                        BiAds.showToast('success', 'Cập nhật', 'Đã cập nhật thông tin IP');
+                        await AdvancedFeatures.loadIPManagement();
+                        
+                    } catch (error) {
+                        console.error('Error updating IP:', error);
+                        BiAds.showToast('error', 'Lỗi', 'Không thể cập nhật IP');
+                    }
+                }
+            });
+            
+        } catch (error) {
+            console.error('Error loading IP details:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể tải thông tin IP');
+        }
+    },
+    
+    deleteIP: function(ipId) {
+        ModalConfirmation.showDanger({
+            title: '🗑️ Xóa IP?',
+            message: 'Bạn có chắc chắn muốn xóa IP này?',
+            details: 'Hành động này không thể hoàn tác.',
+            confirmText: 'Xóa',
+            onConfirm: async () => {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/device-ips/${ipId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (!response.ok) throw new Error('Failed to delete IP');
+                    
+                    BiAds.showToast('success', 'Đã xóa', 'IP đã được xóa khỏi hệ thống');
+                    await AdvancedFeatures.loadIPManagement();
+                    
+                } catch (error) {
+                    console.error('Error deleting IP:', error);
+                    BiAds.showToast('error', 'Lỗi', 'Không thể xóa IP');
+                }
+            }
+        });
+    },
+    
+    refreshIPs: function() {
+        this.loadIPManagement();
+        BiAds.showToast('info', 'Làm mới', 'Đang tải lại danh sách IP...');
+    },
+    
+    searchIPs: function() {
+        this.loadIPManagement();
+    },
+    
+    filterIPs: function() {
+        this.loadIPManagement();
+    },
+    
+    // ============================================
+    // WHITELIST MANAGEMENT
+    // ============================================
+    
+    renderWhitelistPage: async function(content) {
+        content.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    🛡️ Quản lý Whitelist
+                    <div style="float: right;">
+                        <button class="btn-primary" onclick="AdvancedFeatures.showAddWhitelistModal()">
+                            ➕ Thêm vào Whitelist
+                        </button>
+                        <button class="btn-secondary" onclick="AdvancedFeatures.importWhitelist()">
+                            📥 Import từ file
+                        </button>
+                        <button class="btn-success" onclick="AdvancedFeatures.refreshWhitelist()">
+                            🔄 Làm mới
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="info-box">
+                        <h4>ℹ️ Whitelist là gì?</h4>
+                        <p>Whitelist là danh sách tài khoản được bảo vệ đặc biệt, không bị tương tác tiêu cực.</p>
+                        <p><strong>Công dụng:</strong></p>
+                        <ul style="margin-left: 20px; color: #888;">
+                            <li>Bảo vệ tài khoản VIP, khách hàng quan trọng</li>
+                            <li>Tự động chấp nhận kết bạn</li>
+                            <li>Ưu tiên tương tác (like, comment)</li>
+                            <li>Không bao giờ unfriend</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="grid-3" style="margin-bottom: 20px;">
+                        <div class="stat-card">
+                            <h4 id="totalWhitelistCount">0</h4>
+                            <p>Tổng whitelist</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4 id="activeWhitelistCount">0</h4>
+                            <p>Đang hoạt động</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4 id="inactiveWhitelistCount">0</h4>
+                            <p>Không hoạt động</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <input type="text" 
+                               id="searchWhitelistInput" 
+                               placeholder="Tìm kiếm theo UID, tên..." 
+                               style="width: 300px; margin-right: 10px;"
+                               onkeyup="if(event.key==='Enter') AdvancedFeatures.searchWhitelist()">
+                        <button class="btn-secondary" onclick="AdvancedFeatures.searchWhitelist()">🔍 Tìm</button>
+                        <select id="filterWhitelistStatus" onchange="AdvancedFeatures.filterWhitelist()" style="margin-left: 10px;">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="active">Hoạt động</option>
+                            <option value="inactive">Không hoạt động</option>
+                        </select>
+                    </div>
+
+                    <div id="whitelistList">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>UID</th>
+                                    <th>Tên</th>
+                                    <th>Tên người dùng</th>
+                                    <th>Trạng thái</th>
+                                    <th>Lý do</th>
+                                    <th>Ngày thêm</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="whitelistTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align: center; padding: 40px; color: #888;">
+                                        <p>Đang tải danh sách whitelist...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Load data
+        await this.loadWhitelist();
+    },
+    
+    loadWhitelist: async function() {
+        try {
+            // Load stats
+            const statsResponse = await fetch('http://localhost:8000/api/whitelist/stats');
+            if (statsResponse.ok) {
+                const stats = await statsResponse.json();
+                document.getElementById('totalWhitelistCount').textContent = stats.total_accounts;
+                document.getElementById('activeWhitelistCount').textContent = stats.active_accounts;
+                document.getElementById('inactiveWhitelistCount').textContent = stats.inactive_accounts;
+            }
+            
+            // Load whitelist
+            const searchValue = document.getElementById('searchWhitelistInput')?.value || '';
+            const statusFilter = document.getElementById('filterWhitelistStatus')?.value || '';
+            
+            let url = 'http://localhost:8000/api/whitelist/?limit=100';
+            if (searchValue) url += `&search=${encodeURIComponent(searchValue)}`;
+            if (statusFilter) url += `&is_active=${statusFilter === 'active'}`;
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to load whitelist');
+            
+            const whitelist = await response.json();
+            this.renderWhitelistTable(whitelist);
+            
+        } catch (error) {
+            console.error('Error loading whitelist:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể tải danh sách whitelist');
+        }
+    },
+    
+    renderWhitelistTable: function(whitelist) {
+        const tbody = document.getElementById('whitelistTableBody');
+        
+        if (!whitelist || whitelist.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #888;">
+                        <p>Chưa có tài khoản nào trong whitelist</p>
+                        <p>Nhấn "➕ Thêm vào Whitelist" để bắt đầu</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = whitelist.map((item, index) => {
+            const statusBadge = item.is_active 
+                ? '<span class="badge badge-success">Hoạt động</span>'
+                : '<span class="badge badge-secondary">Không hoạt động</span>';
+            
+            return `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><strong>${item.uid}</strong></td>
+                    <td>${item.name || '<span style="color: #888;">N/A</span>'}</td>
+                    <td>${item.username || '<span style="color: #888;">N/A</span>'}</td>
+                    <td>${statusBadge}</td>
+                    <td><small>${item.reason || '<span style="color: #888;">Không có</span>'}</small></td>
+                    <td><small>${new Date(item.created_at).toLocaleDateString('vi-VN')}</small></td>
+                    <td>
+                        <button class="btn-sm btn-primary" onclick="AdvancedFeatures.editWhitelist(${item.id})">✏️</button>
+                        <button class="btn-sm btn-danger" onclick="AdvancedFeatures.deleteWhitelist(${item.id})">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+    
+    showAddWhitelistModal: function() {
+        ModalConfirmation.showInput({
+            title: '➕ Thêm vào Whitelist',
+            message: 'Nhập thông tin tài khoản muốn bảo vệ:',
+            inputs: [
+                { id: 'uid', label: 'UID *', type: 'text', placeholder: '100012345678901', required: true },
+                { id: 'name', label: 'Tên', type: 'text', placeholder: 'Nguyễn Văn A' },
+                { id: 'username', label: 'Username', type: 'text', placeholder: 'nguyenvana' },
+                { id: 'reason', label: 'Lý do', type: 'textarea', placeholder: 'VIP, Khách hàng quan trọng...' }
+            ],
+            confirmText: 'Thêm vào Whitelist',
+            onConfirm: async (values) => {
+                try {
+                    const response = await fetch('http://localhost:8000/api/whitelist/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            uid: values.uid,
+                            name: values.name || null,
+                            username: values.username || null,
+                            reason: values.reason || null,
+                            is_active: true
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to add to whitelist');
+                    }
+                    
+                    BiAds.showToast('success', 'Thành công', 'Đã thêm vào whitelist');
+                    await AdvancedFeatures.loadWhitelist();
+                    
+                } catch (error) {
+                    console.error('Error adding to whitelist:', error);
+                    BiAds.showToast('error', 'Lỗi', error.message);
+                }
+            }
+        });
+    },
+    
+    importWhitelist: function() {
+        ModalConfirmation.showInput({
+            title: '📥 Import Whitelist',
+            message: 'Chọn file chứa danh sách UID (mỗi UID một dòng):',
+            inputs: [
+                { id: 'file', label: 'Chọn file', type: 'file', accept: '.txt' },
+                { id: 'reason', label: 'Lý do chung', type: 'textarea', placeholder: 'Lý do thêm vào whitelist...' }
+            ],
+            confirmText: 'Import',
+            onConfirm: async (values) => {
+                try {
+                    const fileInput = document.querySelector('input[type="file"]');
+                    if (!fileInput.files.length) {
+                        throw new Error('Vui lòng chọn file');
+                    }
+                    
+                    const formData = new FormData();
+                    formData.append('file', fileInput.files[0]);
+                    if (values.reason) {
+                        formData.append('reason', values.reason);
+                    }
+                    
+                    const response = await fetch('http://localhost:8000/api/whitelist/import', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to import');
+                    }
+                    
+                    const result = await response.json();
+                    BiAds.showToast('success', 'Hoàn thành', 
+                        `Đã import ${result.imported} UID, bỏ qua ${result.skipped} trùng lặp`);
+                    await AdvancedFeatures.loadWhitelist();
+                    
+                } catch (error) {
+                    console.error('Error importing whitelist:', error);
+                    BiAds.showToast('error', 'Lỗi', error.message);
+                }
+            }
+        });
+    },
+    
+    editWhitelist: async function(whitelistId) {
+        try {
+            // Get whitelist details (need to implement GET endpoint)
+            const response = await fetch(`http://localhost:8000/api/whitelist/${whitelistId}`);
+            if (!response.ok) throw new Error('Failed to get whitelist details');
+            
+            const item = await response.json();
+            
+            ModalConfirmation.showInput({
+                title: '✏️ Chỉnh sửa Whitelist',
+                message: `Chỉnh sửa thông tin ${item.uid}:`,
+                inputs: [
+                    { id: 'name', label: 'Tên', type: 'text', value: item.name || '' },
+                    { id: 'username', label: 'Username', type: 'text', value: item.username || '' },
+                    { id: 'reason', label: 'Lý do', type: 'textarea', value: item.reason || '' },
+                    { id: 'isActive', label: 'Hoạt động', type: 'checkbox', checked: item.is_active }
+                ],
+                confirmText: 'Cập nhật',
+                onConfirm: async (values) => {
+                    try {
+                        const updateResponse = await fetch(`http://localhost:8000/api/whitelist/${whitelistId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: values.name || null,
+                                username: values.username || null,
+                                reason: values.reason || null,
+                                is_active: values.isActive
+                            })
+                        });
+                        
+                        if (!updateResponse.ok) throw new Error('Failed to update whitelist');
+                        
+                        BiAds.showToast('success', 'Cập nhật', 'Đã cập nhật thông tin whitelist');
+                        await AdvancedFeatures.loadWhitelist();
+                        
+                    } catch (error) {
+                        console.error('Error updating whitelist:', error);
+                        BiAds.showToast('error', 'Lỗi', 'Không thể cập nhật whitelist');
+                    }
+                }
+            });
+            
+        } catch (error) {
+            console.error('Error loading whitelist details:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể tải thông tin whitelist');
+        }
+    },
+    
+    deleteWhitelist: function(whitelistId) {
+        ModalConfirmation.showDanger({
+            title: '🗑️ Xóa khỏi Whitelist?',
+            message: 'Bạn có chắc chắn muốn xóa tài khoản này khỏi whitelist?',
+            details: 'Tài khoản sẽ không còn được bảo vệ đặc biệt.',
+            confirmText: 'Xóa',
+            onConfirm: async () => {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/whitelist/${whitelistId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (!response.ok) throw new Error('Failed to delete from whitelist');
+                    
+                    BiAds.showToast('success', 'Đã xóa', 'Tài khoản đã được xóa khỏi whitelist');
+                    await AdvancedFeatures.loadWhitelist();
+                    
+                } catch (error) {
+                    console.error('Error deleting from whitelist:', error);
+                    BiAds.showToast('error', 'Lỗi', 'Không thể xóa khỏi whitelist');
+                }
+            }
+        });
+    },
+    
+    refreshWhitelist: function() {
+        this.loadWhitelist();
+        BiAds.showToast('info', 'Làm mới', 'Đang tải lại danh sách whitelist...');
+    },
+    
+    searchWhitelist: function() {
+        this.loadWhitelist();
+    },
+    
+    filterWhitelist: function() {
+        this.loadWhitelist();
+    }
 };
 
 // Expose to global scope
