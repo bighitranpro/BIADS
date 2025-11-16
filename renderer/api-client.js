@@ -440,6 +440,143 @@ const apiClient = {
         if (accountId) endpoint += `&account_id=${accountId}`;
         if (level) endpoint += `&level=${level}`;
         return await this.request(endpoint);
+    },
+
+    // ========== ACCOUNT INTERACTIONS API ==========
+
+    // Post Status
+    async postStatus(accountIds, content, targetType = 'timeline', targetId = null, imageUrls = [], delay = 10, privacy = 'public') {
+        return await this.request('/api/interactions/post-status', {
+            method: 'POST',
+            body: JSON.stringify({
+                account_ids: accountIds,
+                content: content,
+                target_type: targetType,
+                target_id: targetId,
+                image_urls: imageUrls,
+                delay_between_posts: delay,
+                privacy: privacy
+            })
+        });
+    },
+
+    // Share Post
+    async sharePost(accountIds, postUrl, message = null, targetType = 'timeline', targetId = null, delay = 10) {
+        return await this.request('/api/interactions/share-post', {
+            method: 'POST',
+            body: JSON.stringify({
+                account_ids: accountIds,
+                post_url: postUrl,
+                message: message,
+                target_type: targetType,
+                target_id: targetId,
+                delay_between_shares: delay
+            })
+        });
+    },
+
+    // Comment on Post
+    async commentPost(accountIds, postUrls, comments, delay = 5, randomComments = true) {
+        return await this.request('/api/interactions/comment-post', {
+            method: 'POST',
+            body: JSON.stringify({
+                account_ids: accountIds,
+                post_urls: postUrls,
+                comments: comments,
+                delay_between_comments: delay,
+                random_comments: randomComments
+            })
+        });
+    },
+
+    // Auto Like
+    async autoLike(accountIds, targetUrls, reactionType = 'LIKE', delay = 3) {
+        return await this.request('/api/interactions/auto-like', {
+            method: 'POST',
+            body: JSON.stringify({
+                account_ids: accountIds,
+                target_urls: targetUrls,
+                reaction_type: reactionType,
+                delay_between_reactions: delay
+            })
+        });
+    },
+
+    // Update Bio
+    async updateBio(accountIds, bioText, bioType = 'description') {
+        return await this.request('/api/interactions/update-bio', {
+            method: 'POST',
+            body: JSON.stringify({
+                account_ids: accountIds,
+                bio_text: bioText,
+                bio_type: bioType
+            })
+        });
+    },
+
+    // Hide Notifications
+    async hideNotifications(accountIds, notificationType = 'all') {
+        return await this.request('/api/interactions/hide-notifications', {
+            method: 'POST',
+            body: JSON.stringify({
+                account_ids: accountIds,
+                notification_type: notificationType
+            })
+        });
+    },
+
+    // Auto View Newsfeed
+    async autoViewNews(accountIds, durationMinutes = 10, scrollCount = 20, interactProbability = 0.3) {
+        return await this.request('/api/interactions/auto-view-news', {
+            method: 'POST',
+            body: JSON.stringify({
+                account_ids: accountIds,
+                duration_minutes: durationMinutes,
+                scroll_count: scrollCount,
+                interact_probability: interactProbability
+            })
+        });
+    },
+
+    // Auto Watch Video
+    async autoWatchVideo(accountIds, videoUrls = [], watchDuration = 30, videosCount = 10) {
+        return await this.request('/api/interactions/auto-watch-video', {
+            method: 'POST',
+            body: JSON.stringify({
+                account_ids: accountIds,
+                video_urls: videoUrls,
+                watch_duration_seconds: watchDuration,
+                videos_count: videosCount
+            })
+        });
+    },
+
+    // Delete Posts
+    async deletePosts(accountId, postIds) {
+        return await this.request('/api/interactions/delete-posts', {
+            method: 'POST',
+            body: JSON.stringify({
+                account_id: accountId,
+                post_ids: postIds
+            })
+        });
+    },
+
+    // Poke Friends
+    async pokeFriends(accountIds, friendIds, delay = 5) {
+        return await this.request('/api/interactions/poke-friends', {
+            method: 'POST',
+            body: JSON.stringify({
+                account_ids: accountIds,
+                friend_ids: friendIds,
+                delay_between_pokes: delay
+            })
+        });
+    },
+
+    // Get Interaction Task Status
+    async getInteractionTaskStatus(taskId) {
+        return await this.request(`/api/interactions/tasks/${taskId}`);
     }
 };
 
