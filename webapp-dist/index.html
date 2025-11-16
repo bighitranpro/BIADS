@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bi Ads - Multi Tool PRO v3.0</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/additional-styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="top-nav-brand">
+                <h1>🚀 Bi Ads - Multi Tool PRO v3.0</h1>
+            </div>
+            <div class="top-nav-menu">
+                <button class="top-nav-item active" data-page="dashboard">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="top-nav-item" data-page="accounts">
+                    <span class="icon">👤</span>
+                    <span>Tài khoản</span>
+                </button>
+                <button class="top-nav-item" data-page="proxies">
+                    <span class="icon">🌐</span>
+                    <span>Proxy</span>
+                </button>
+                <button class="top-nav-item" data-page="tasks">
+                    <span class="icon">📋</span>
+                    <span>Tác vụ</span>
+                </button>
+                <button class="top-nav-item" data-page="logs">
+                    <span class="icon">📝</span>
+                    <span>Nhật ký</span>
+                </button>
+                <button class="top-nav-item" data-page="settings">
+                    <span class="icon">⚙️</span>
+                    <span>Cài đặt</span>
+                </button>
+            </div>
+            <div class="top-nav-status">
+                <div class="backend-status" id="backendStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Đang kết nối...</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="content-header">
+                <h2 id="contentTitle">📊 Dashboard - Tổng quan hệ thống</h2>
+                <div class="content-actions" id="contentActions"></div>
+            </div>
+            <div class="content-body" id="contentBody">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/accounts.js"></script>
+    <script src="js/proxies.js"></script>
+    <script src="js/tasks.js"></script>
+    <script src="js/logs.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
