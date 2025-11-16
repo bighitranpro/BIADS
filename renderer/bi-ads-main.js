@@ -1250,14 +1250,43 @@ const BiAds = {
         if (existingCard) {
             const proxyListHTML = `
                 <div class="card" style="margin-top: 20px;">
-                    <div class="card-header">Danh sách Proxy (${proxies.length})</div>
+                    <div class="card-header">
+                        Danh sách Proxy (${proxies.length})
+                        <div style="float: right;">
+                            <button class="btn-primary" style="padding: 5px 10px; font-size: 12px;" onclick="BiAds.showBulkAssignModal()">
+                                🔗 Gán hàng loạt
+                            </button>
+                            <button class="btn-warning" style="padding: 5px 10px; font-size: 12px;" onclick="BiAds.bulkCheckProxies()">
+                                ✓ Kiểm tra đã chọn
+                            </button>
+                            <button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="BiAds.bulkDeleteProxies()">
+                                🗑️ Xóa đã chọn
+                            </button>
+                        </div>
+                    </div>
                     <div class="card-body">
                         ${proxies.length === 0 ? `
                             <p style="text-align: center; color: #888;">Chưa có proxy nào</p>
                         ` : `
+                            <div id="bulkActionToolbar" style="display: none; background: rgba(102, 126, 234, 0.1); padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+                                <span id="selectedCount" style="color: #4facfe; font-weight: bold;">0 proxy được chọn</span>
+                                <button class="btn-primary" style="padding: 5px 10px; font-size: 12px; margin-left: 10px;" onclick="BiAds.showBulkAssignModal()">
+                                    🔗 Gán cho tài khoản
+                                </button>
+                                <button class="btn-warning" style="padding: 5px 10px; font-size: 12px;" onclick="BiAds.bulkCheckProxies()">
+                                    ✓ Kiểm tra
+                                </button>
+                                <button class="btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="BiAds.bulkUnassignProxies()">
+                                    🔓 Gỡ khỏi tài khoản
+                                </button>
+                                <button class="btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="BiAds.bulkDeleteProxies()">
+                                    🗑️ Xóa
+                                </button>
+                            </div>
                             <table class="data-table">
                                 <thead>
                                     <tr>
+                                        <th><input type="checkbox" id="selectAllProxies" onchange="BiAds.toggleAllProxies(this)"></th>
                                         <th>STT</th>
                                         <th>IP</th>
                                         <th>Port</th>
@@ -1269,6 +1298,7 @@ const BiAds = {
                                 <tbody>
                                     ${proxies.map((proxy, index) => `
                                         <tr>
+                                            <td><input type="checkbox" class="proxy-checkbox" data-proxy-id="${proxy.id}" onchange="BiAds.updateProxySelection()"></td>
                                             <td>${index + 1}</td>
                                             <td>${proxy.ip}</td>
                                             <td>${proxy.port}</td>
@@ -1297,6 +1327,301 @@ const BiAds = {
                 content.insertAdjacentHTML('beforeend', proxyListHTML);
             }
         }
+    },
+    
+    // Toggle all proxies selection
+    toggleAllProxies: function(checkbox) {
+        const checkboxes = document.querySelectorAll('.proxy-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = checkbox.checked;
+        });
+        this.updateProxySelection();
+    },
+    
+    // Update proxy selection count
+    updateProxySelection: function() {
+        const checkboxes = document.querySelectorAll('.proxy-checkbox:checked');
+        const count = checkboxes.length;
+        const toolbar = document.getElementById('bulkActionToolbar');
+        const countSpan = document.getElementById('selectedCount');
+        
+        if (toolbar && countSpan) {
+            if (count > 0) {
+                toolbar.style.display = 'block';
+                countSpan.textContent = `${count} proxy được chọn`;
+            } else {
+                toolbar.style.display = 'none';
+            }
+        }
+    },
+    
+    // Get selected proxy IDs
+    getSelectedProxyIds: function() {
+        const checkboxes = document.querySelectorAll('.proxy-checkbox:checked');
+        return Array.from(checkboxes).map(cb => parseInt(cb.dataset.proxyId));
+    },
+    
+    // Show bulk assign modal
+    showBulkAssignModal: async function() {
+        const proxyIds = this.getSelectedProxyIds();
+        
+        if (proxyIds.length === 0) {
+            this.showToast('warning', 'Chưa chọn proxy', 'Vui lòng chọn ít nhất một proxy');
+            return;
+        }
+        
+        try {
+            // Load accounts
+            const response = await fetch('http://localhost:8000/api/accounts?limit=1000');
+            const accounts = await response.json();
+            
+            if (accounts.length === 0) {
+                this.showToast('warning', 'Không có tài khoản', 'Vui lòng thêm tài khoản trước');
+                return;
+            }
+            
+            ModalConfirmation.showInput({
+                title: '🔗 Gán proxy hàng loạt',
+                html: `
+                    <div class="info-box" style="margin-bottom: 15px;">
+                        <p><strong>Đã chọn:</strong> ${proxyIds.length} proxy</p>
+                    </div>
+                    <div class="input-group">
+                        <label>Chiến lược gán</label>
+                        <select id="assignStrategy" style="width: 100%; padding: 8px; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: white;">
+                            <option value="round_robin">Round Robin - Chia đều proxy cho tài khoản</option>
+                            <option value="random">Random - Gán ngẫu nhiên</option>
+                            <option value="one_to_one">One-to-One - Gán 1-1 (cần số lượng bằng nhau)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Chọn tài khoản (giữ Ctrl để chọn nhiều)</label>
+                        <select id="accountsSelect" multiple style="width: 100%; padding: 8px; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: white; height: 200px;">
+                            ${accounts.map(acc => `
+                                <option value="${acc.id}">${acc.name || acc.username || acc.uid}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <button class="btn-secondary" style="width: 100%;" onclick="document.querySelectorAll('#accountsSelect option').forEach(opt => opt.selected = true)">
+                            ✓ Chọn tất cả
+                        </button>
+                    </div>
+                `,
+                confirmText: 'Gán ngay',
+                onConfirm: async () => {
+                    const strategy = document.getElementById('assignStrategy').value;
+                    const accountsSelect = document.getElementById('accountsSelect');
+                    const accountIds = Array.from(accountsSelect.selectedOptions).map(opt => parseInt(opt.value));
+                    
+                    if (accountIds.length === 0) {
+                        app.addLog('warning', 'Vui lòng chọn ít nhất một tài khoản');
+                        return;
+                    }
+                    
+                    await this.executeBulkAssign(accountIds, proxyIds, strategy);
+                }
+            });
+            
+        } catch (error) {
+            this.showToast('error', 'Lỗi', error.message);
+        }
+    },
+    
+    // Execute bulk assign
+    executeBulkAssign: async function(accountIds, proxyIds, strategy) {
+        const loadingToast = this.showLoading('Đang gán proxy...', `Gán ${proxyIds.length} proxy cho ${accountIds.length} tài khoản`);
+        
+        try {
+            const response = await fetch('http://localhost:8000/api/proxies/bulk/assign', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    account_ids: accountIds,
+                    proxy_ids: proxyIds,
+                    strategy: strategy
+                })
+            });
+            
+            const result = await response.json();
+            
+            this.hideToast(loadingToast);
+            
+            if (response.ok && result.success) {
+                this.log('success', result.message);
+                this.showToast('success', 'Gán proxy thành công', result.message);
+                
+                // Reload accounts
+                setTimeout(() => {
+                    this.loadAccountsFromBackend();
+                }, 1000);
+            } else {
+                throw new Error(result.detail || 'Lỗi gán proxy');
+            }
+            
+        } catch (error) {
+            this.hideToast(loadingToast);
+            this.log('error', `Lỗi: ${error.message}`);
+            this.showToast('error', 'Lỗi gán proxy', error.message);
+        }
+    },
+    
+    // Bulk unassign proxies
+    bulkUnassignProxies: async function() {
+        try {
+            // Get accounts that have selected proxies
+            const proxyIds = this.getSelectedProxyIds();
+            
+            if (proxyIds.length === 0) {
+                this.showToast('warning', 'Chưa chọn proxy', 'Vui lòng chọn ít nhất một proxy');
+                return;
+            }
+            
+            // Get all accounts
+            const response = await fetch('http://localhost:8000/api/accounts?limit=1000');
+            const accounts = await response.json();
+            
+            // Filter accounts that use selected proxies
+            const accountIds = accounts
+                .filter(acc => proxyIds.includes(acc.proxy_id))
+                .map(acc => acc.id);
+            
+            if (accountIds.length === 0) {
+                this.showToast('info', 'Không có tài khoản nào', 'Không có tài khoản nào đang sử dụng proxy đã chọn');
+                return;
+            }
+            
+            ModalConfirmation.showWarning({
+                title: '🔓 Gỡ proxy khỏi tài khoản?',
+                message: `Gỡ proxy khỏi ${accountIds.length} tài khoản`,
+                confirmText: 'Gỡ ngay',
+                onConfirm: async () => {
+                    const loadingToast = this.showLoading('Đang gỡ proxy...', 'Vui lòng đợi');
+                    
+                    try {
+                        const response = await fetch('http://localhost:8000/api/proxies/bulk/unassign', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(accountIds)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        this.hideToast(loadingToast);
+                        
+                        if (response.ok && result.success) {
+                            this.log('success', result.message);
+                            this.showToast('success', 'Đã gỡ proxy', result.message);
+                            this.loadAccountsFromBackend();
+                        } else {
+                            throw new Error(result.detail || 'Lỗi gỡ proxy');
+                        }
+                        
+                    } catch (error) {
+                        this.hideToast(loadingToast);
+                        this.showToast('error', 'Lỗi', error.message);
+                    }
+                }
+            });
+            
+        } catch (error) {
+            this.showToast('error', 'Lỗi', error.message);
+        }
+    },
+    
+    // Bulk check proxies
+    bulkCheckProxies: async function() {
+        const proxyIds = this.getSelectedProxyIds();
+        
+        if (proxyIds.length === 0) {
+            this.showToast('warning', 'Chưa chọn proxy', 'Vui lòng chọn ít nhất một proxy');
+            return;
+        }
+        
+        ModalConfirmation.showInfo({
+            title: '✓ Kiểm tra proxy?',
+            message: `Kiểm tra ${proxyIds.length} proxy đã chọn`,
+            details: 'Hệ thống sẽ test kết nối đến từng proxy',
+            confirmText: 'Bắt đầu kiểm tra',
+            onConfirm: async () => {
+                const loadingToast = this.showLoading('Đang kiểm tra proxy...', 'Vui lòng đợi');
+                
+                try {
+                    const response = await fetch('http://localhost:8000/api/proxies/bulk/check-sync', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ proxy_ids: proxyIds })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    this.hideToast(loadingToast);
+                    
+                    if (response.ok && result.success) {
+                        const activeCount = result.results.filter(r => r.is_active).length;
+                        const failedCount = result.results.length - activeCount;
+                        
+                        this.log('success', `Hoàn thành: ${activeCount} hoạt động, ${failedCount} lỗi`);
+                        this.showToast('success', 'Đã kiểm tra proxy', `${activeCount} hoạt động, ${failedCount} lỗi`);
+                        
+                        // Reload proxy list
+                        this.loadProxiesFromBackend();
+                    } else {
+                        throw new Error(result.detail || 'Lỗi kiểm tra proxy');
+                    }
+                    
+                } catch (error) {
+                    this.hideToast(loadingToast);
+                    this.log('error', `Lỗi: ${error.message}`);
+                    this.showToast('error', 'Lỗi kiểm tra proxy', error.message);
+                }
+            }
+        });
+    },
+    
+    // Bulk delete proxies
+    bulkDeleteProxies: async function() {
+        const proxyIds = this.getSelectedProxyIds();
+        
+        if (proxyIds.length === 0) {
+            this.showToast('warning', 'Chưa chọn proxy', 'Vui lòng chọn ít nhất một proxy');
+            return;
+        }
+        
+        ModalConfirmation.showDanger({
+            title: '🗑️ Xóa proxy?',
+            message: `Xóa ${proxyIds.length} proxy đã chọn`,
+            details: 'Hành động này không thể hoàn tác!',
+            confirmText: 'Xóa ngay',
+            onConfirm: async () => {
+                const loadingToast = this.showLoading('Đang xóa proxy...', 'Vui lòng đợi');
+                
+                try {
+                    const response = await fetch('http://localhost:8000/api/proxies/bulk/delete', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ proxy_ids: proxyIds })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    this.hideToast(loadingToast);
+                    
+                    if (response.ok && result.success) {
+                        this.log('success', result.message);
+                        this.showToast('success', 'Đã xóa proxy', result.message);
+                        this.loadProxiesFromBackend();
+                    } else {
+                        throw new Error(result.detail || 'Lỗi xóa proxy');
+                    }
+                    
+                } catch (error) {
+                    this.hideToast(loadingToast);
+                    this.log('error', `Lỗi: ${error.message}`);
+                    this.showToast('error', 'Lỗi xóa proxy', error.message);
+                }
+            }
+        });
     },
 
     // Auto assign proxies

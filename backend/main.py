@@ -103,6 +103,9 @@ from api.account_checker_api import router as account_checker_router
 from api.activity_api import router as activity_router
 from api.task_status_api import router as task_status_router
 from api.proxy_bulk_api import router as proxy_bulk_router
+from api.sub_accounts_api import router as sub_accounts_router
+from api.facebook_ids_api import router as facebook_ids_router
+from api.posted_content_api import router as posted_content_router
 
 app.include_router(advanced_router)
 app.include_router(settings_router)
@@ -113,6 +116,9 @@ app.include_router(account_checker_router)
 app.include_router(activity_router)
 app.include_router(task_status_router)
 app.include_router(proxy_bulk_router)
+app.include_router(sub_accounts_router)
+app.include_router(facebook_ids_router)
+app.include_router(posted_content_router)
 
 # ============================================
 # PYDANTIC MODELS
