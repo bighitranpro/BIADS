@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Accounts Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f0f1e;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349, #f45c43);
+            color: white;
+        }
+        .btn-info {
+            background: linear-gradient(135deg, #667eea, #4facfe);
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #1a1a2e;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        th {
+            background: rgba(102, 126, 234, 0.1);
+            font-weight: 600;
+        }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+        }
+        .badge-danger {
+            background: linear-gradient(135deg, #eb3349, #f45c43);
+        }
+        .badge-warning {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+        }
+        #log {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            height: 200px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 5px;
+            margin: 2px 0;
+            border-left: 3px solid;
+        }
+        .log-success {
+            border-left-color: #38ef7d;
+            color: #38ef7d;
+        }
+        .log-error {
+            border-left-color: #f45c43;
+            color: #f45c43;
+        }
+        .log-info {
+            border-left-color: #4facfe;
+            color: #4facfe;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Accounts Management</h1>
+        
+        <div>
+            <button class="btn-primary" onclick="loadAccounts()">🔄 Load Accounts</button>
+            <button class="btn-success" onclick="checkAllAccounts()">✅ Check All Status</button>
+            <button class="btn-info" onclick="loadProxies()">📡 Load Proxies</button>
+        </div>
+
+        <div id="log"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>UID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Proxy</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="accountsTable">
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #888;">
+                        Click "Load Accounts" to fetch data
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let accounts = [];
+        let proxies = [];
+
+        function log(level, message) {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${level}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function loadAccounts() {
+            try {
+                log('info', '🔄 Loading accounts...');
+                const response = await fetch(`${API_URL}/api/accounts`);
+                accounts = await response.json();
+                log('success', `✅ Loaded ${accounts.length} accounts`);
+                renderAccounts();
+            } catch (error) {
+                log('error', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function loadProxies() {
+            try {
+                log('info', '📡 Loading proxies...');
+                const response = await fetch(`${API_URL}/api/proxies`);
+                proxies = await response.json();
+                log('success', `✅ Loaded ${proxies.length} proxies`);
+            } catch (error) {
+                log('error', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function checkAccountStatus(accountId) {
+            try {
+                log('info', `🔍 Checking account ${accountId}...`);
+                const response = await fetch(`${API_URL}/api/accounts/${accountId}/check-status`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                const status = result.is_live ? '✅ LIVE' : '❌ DIE';
+                log('success', `${status} - ${result.reason}`);
+                await loadAccounts();
+            } catch (error) {
+                log('error', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function checkAllAccounts() {
+            if (!confirm('Check all accounts? This may take a while.')) {
+                return;
+            }
+            try {
+                log('info', '🔄 Checking all accounts...');
+                const response = await fetch(`${API_URL}/api/accounts/check-status-bulk`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(null)
+                });
+                const result = await response.json();
+                log('success', `✅ Done: ${result.live_count} live, ${result.die_count} die`);
+                await loadAccounts();
+            } catch (error) {
+                log('error', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function deleteAccount(accountId) {
+            if (!confirm('Delete this account?')) {
+                return;
+            }
+            try {
+                log('info', `🗑️ Deleting account ${accountId}...`);
+                const response = await fetch(`${API_URL}/api/accounts/${accountId}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                log('success', '✅ Account deleted');
+                await loadAccounts();
+            } catch (error) {
+                log('error', `❌ Error: ${error.message}`);
+            }
+        }
+
+        function renderAccounts() {
+            const tbody = document.getElementById('accountsTable');
+            tbody.innerHTML = accounts.map((acc, index) => {
+                const statusClass = acc.status === 'active' ? 'success' : 
+                                  acc.status === 'dead' ? 'danger' : 'warning';
+                return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><code>${acc.uid}</code></td>
+                        <td>${acc.name || 'N/A'}</td>
+                        <td>${acc.email || 'N/A'}</td>
+                        <td>${acc.proxy_id ? `Proxy #${acc.proxy_id}` : '❌'}</td>
+                        <td><span class="badge badge-${statusClass}">${acc.status.toUpperCase()}</span></td>
+                        <td>
+                            <button class="btn-info" onclick="checkAccountStatus(${acc.id})">🔍 Check</button>
+                            <button class="btn-danger" onclick="deleteAccount(${acc.id})">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Auto-load on page load
+        window.onload = () => {
+            loadAccounts();
+            loadProxies();
+        };
+    </script>
+</body>
+</html>

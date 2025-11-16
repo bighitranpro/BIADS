@@ -1,0 +1,371 @@
+<!-- Settings Page Content -->
+<div class="settings-container">
+    <div class="settings-header">
+        <h2>⚙️ Cài đặt hệ thống</h2>
+        <button class="btn-primary" onclick="settingsManager.saveSettings()">
+            💾 Lưu cài đặt
+        </button>
+    </div>
+
+    <div class="settings-sections">
+        <!-- Database Settings -->
+        <div class="settings-card">
+            <div class="card-header">
+                <span class="icon">💾</span>
+                <h3>Cấu hình Database</h3>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <label>Database Type</label>
+                    <select id="databaseType">
+                        <option value="sqlite">SQLite (Local)</option>
+                        <option value="postgresql">PostgreSQL (Production)</option>
+                    </select>
+                </div>
+                <div class="input-group" id="postgresConfig" style="display: none;">
+                    <label>PostgreSQL Connection String</label>
+                    <input type="text" id="databaseUrl" placeholder="postgresql://user:pass@host:5432/dbname">
+                </div>
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="autoBackup">
+                        Tự động sao lưu database hàng ngày
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Facebook API Settings -->
+        <div class="settings-card">
+            <div class="card-header">
+                <span class="icon">📘</span>
+                <h3>Facebook API</h3>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <label>Facebook App ID</label>
+                    <input type="text" id="facebookAppId" placeholder="Nhập App ID">
+                </div>
+                <div class="input-group">
+                    <label>Facebook App Secret</label>
+                    <input type="password" id="facebookAppSecret" placeholder="Nhập App Secret">
+                </div>
+                <div class="input-group">
+                    <label>Webhook Verify Token</label>
+                    <input type="text" id="webhookVerifyToken" placeholder="Nhập verify token">
+                </div>
+                <div class="info-box">
+                    <h4>📌 Hướng dẫn cấu hình Webhook</h4>
+                    <p>1. Truy cập <a href="https://developers.facebook.com" target="_blank">Facebook Developers</a></p>
+                    <p>2. Chọn app của bạn → Webhooks → Edit Subscription</p>
+                    <p>3. Callback URL: <code id="webhookUrl">http://your-server.com/webhook</code></p>
+                    <p>4. Verify Token: Nhập token bên trên</p>
+                    <p>5. Subscribe to: feed, comments, reactions, mention</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Telegram Bot Settings -->
+        <div class="settings-card">
+            <div class="card-header">
+                <span class="icon">📱</span>
+                <h3>Telegram Bot</h3>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <label>Bot Token</label>
+                    <input type="password" id="telegramBotToken" placeholder="1234567890:ABCdef...">
+                </div>
+                <div class="input-group">
+                    <label>Chat ID</label>
+                    <input type="text" id="telegramChatId" placeholder="123456789">
+                </div>
+                <div class="input-group">
+                    <button class="btn-secondary" onclick="settingsManager.testTelegram()">
+                        🧪 Test thông báo
+                    </button>
+                </div>
+                <div class="info-box">
+                    <h4>📌 Hướng dẫn lấy Bot Token và Chat ID</h4>
+                    <p>1. Tạo bot: Message @BotFather trên Telegram → /newbot</p>
+                    <p>2. Copy Bot Token được cung cấp</p>
+                    <p>3. Lấy Chat ID: Message @userinfobot → Copy ID của bạn</p>
+                    <p>4. Nhắn tin cho bot của bạn để kích hoạt</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="settings-card">
+            <div class="card-header">
+                <span class="icon">🔔</span>
+                <h3>Cài đặt thông báo</h3>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="notifyTaskComplete" checked>
+                        Thông báo khi task hoàn thành
+                    </label>
+                </div>
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="notifyTaskFailed" checked>
+                        Thông báo khi task thất bại
+                    </label>
+                </div>
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="notifyError" checked>
+                        Thông báo lỗi hệ thống
+                    </label>
+                </div>
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="notifyWebhook">
+                        Thông báo sự kiện Facebook
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ChromeDriver Settings -->
+        <div class="settings-card">
+            <div class="card-header">
+                <span class="icon">🌐</span>
+                <h3>ChromeDriver</h3>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="headlessMode">
+                        Chế độ headless (ẩn trình duyệt)
+                    </label>
+                </div>
+                <div class="input-group">
+                    <label>Max concurrent instances</label>
+                    <input type="number" id="maxConcurrent" value="5" min="1" max="20">
+                </div>
+                <div class="input-group">
+                    <label>Task timeout (giây)</label>
+                    <input type="number" id="taskTimeout" value="300" min="30" max="3600">
+                </div>
+            </div>
+        </div>
+
+        <!-- Proxy Settings -->
+        <div class="settings-card">
+            <div class="card-header">
+                <span class="icon">🔒</span>
+                <h3>Cấu hình Proxy</h3>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <label>Proxy rotation strategy</label>
+                    <select id="proxyRotation">
+                        <option value="round-robin">Round Robin</option>
+                        <option value="random">Random</option>
+                        <option value="least-used">Least Used</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Proxy timeout (giây)</label>
+                    <input type="number" id="proxyTimeout" value="30" min="5" max="300">
+                </div>
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="autoAssignProxy" checked>
+                        Tự động gán proxy cho tài khoản mới
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rate Limiting -->
+        <div class="settings-card">
+            <div class="card-header">
+                <span class="icon">⏱️</span>
+                <h3>Rate Limiting</h3>
+            </div>
+            <div class="card-body">
+                <div class="grid-2">
+                    <div class="input-group">
+                        <label>Min delay (giây)</label>
+                        <input type="number" id="delayMin" value="5" min="1" max="60">
+                    </div>
+                    <div class="input-group">
+                        <label>Max delay (giây)</label>
+                        <input type="number" id="delayMax" value="15" min="1" max="60">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Max actions per hour</label>
+                    <input type="number" id="maxActionsPerHour" value="100" min="10" max="1000">
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Settings -->
+        <div class="settings-card">
+            <div class="card-header">
+                <span class="icon">🔧</span>
+                <h3>Cài đặt nâng cao</h3>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="debugMode">
+                        Debug mode (chi tiết log)
+                    </label>
+                </div>
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="retryFailedTasks" checked>
+                        Tự động retry tasks thất bại
+                    </label>
+                </div>
+                <div class="input-group">
+                    <label>Max retries</label>
+                    <input type="number" id="maxRetries" value="3" min="1" max="10">
+                </div>
+                <div class="input-group">
+                    <label>Log level</label>
+                    <select id="logLevel">
+                        <option value="DEBUG">DEBUG</option>
+                        <option value="INFO" selected>INFO</option>
+                        <option value="WARNING">WARNING</option>
+                        <option value="ERROR">ERROR</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-footer">
+        <button class="btn-warning" onclick="settingsManager.resetToDefault()">
+            🔄 Khôi phục mặc định
+        </button>
+        <button class="btn-primary" onclick="settingsManager.saveSettings()">
+            💾 Lưu tất cả cài đặt
+        </button>
+    </div>
+</div>
+
+<script>
+// Settings Manager
+const settingsManager = {
+    async loadSettings() {
+        try {
+            const response = await fetch('http://localhost:8000/api/settings');
+            if (response.ok) {
+                const settings = await response.json();
+                this.populateForm(settings);
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+        }
+    },
+
+    populateForm(settings) {
+        // Populate all form fields with settings
+        for (const [key, value] of Object.entries(settings)) {
+            const element = document.getElementById(key);
+            if (element) {
+                if (element.type === 'checkbox') {
+                    element.checked = value;
+                } else {
+                    element.value = value;
+                }
+            }
+        }
+    },
+
+    async saveSettings() {
+        const settings = {
+            databaseType: document.getElementById('databaseType').value,
+            databaseUrl: document.getElementById('databaseUrl').value,
+            autoBackup: document.getElementById('autoBackup').checked,
+            facebookAppId: document.getElementById('facebookAppId').value,
+            facebookAppSecret: document.getElementById('facebookAppSecret').value,
+            webhookVerifyToken: document.getElementById('webhookVerifyToken').value,
+            telegramBotToken: document.getElementById('telegramBotToken').value,
+            telegramChatId: document.getElementById('telegramChatId').value,
+            notifyTaskComplete: document.getElementById('notifyTaskComplete').checked,
+            notifyTaskFailed: document.getElementById('notifyTaskFailed').checked,
+            notifyError: document.getElementById('notifyError').checked,
+            notifyWebhook: document.getElementById('notifyWebhook').checked,
+            headlessMode: document.getElementById('headlessMode').checked,
+            maxConcurrent: document.getElementById('maxConcurrent').value,
+            taskTimeout: document.getElementById('taskTimeout').value,
+            proxyRotation: document.getElementById('proxyRotation').value,
+            proxyTimeout: document.getElementById('proxyTimeout').value,
+            autoAssignProxy: document.getElementById('autoAssignProxy').checked,
+            delayMin: document.getElementById('delayMin').value,
+            delayMax: document.getElementById('delayMax').value,
+            maxActionsPerHour: document.getElementById('maxActionsPerHour').value,
+            debugMode: document.getElementById('debugMode').checked,
+            retryFailedTasks: document.getElementById('retryFailedTasks').checked,
+            maxRetries: document.getElementById('maxRetries').value,
+            logLevel: document.getElementById('logLevel').value
+        };
+
+        try {
+            const response = await fetch('http://localhost:8000/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(settings)
+            });
+
+            if (response.ok) {
+                app.addLog('success', 'Đã lưu cài đặt thành công');
+            } else {
+                app.addLog('error', 'Không thể lưu cài đặt');
+            }
+        } catch (error) {
+            app.addLog('error', `Lỗi: ${error.message}`);
+        }
+    },
+
+    async testTelegram() {
+        const botToken = document.getElementById('telegramBotToken').value;
+        const chatId = document.getElementById('telegramChatId').value;
+
+        if (!botToken || !chatId) {
+            app.addLog('warning', 'Vui lòng nhập Bot Token và Chat ID');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:8000/api/telegram/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bot_token: botToken, chat_id: chatId })
+            });
+
+            if (response.ok) {
+                app.addLog('success', 'Đã gửi tin nhắn test! Kiểm tra Telegram của bạn');
+            } else {
+                app.addLog('error', 'Không thể gửi tin nhắn test');
+            }
+        } catch (error) {
+            app.addLog('error', `Lỗi: ${error.message}`);
+        }
+    },
+
+    resetToDefault() {
+        if (confirm('Bạn có chắc muốn khôi phục cài đặt mặc định?')) {
+            // Reset to default values
+            location.reload();
+        }
+    }
+};
+
+// Database type change handler
+document.getElementById('databaseType').addEventListener('change', (e) => {
+    const postgresConfig = document.getElementById('postgresConfig');
+    postgresConfig.style.display = e.target.value === 'postgresql' ? 'block' : 'none';
+});
+
+// Load settings on page load
+settingsManager.loadSettings();
+</script>

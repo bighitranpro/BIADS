@@ -1,0 +1,610 @@
+<!-- Help & Documentation Page -->
+<div class="help-container">
+    <div class="help-header">
+        <h2>❓ Trợ giúp & Tài liệu</h2>
+        <div class="search-help">
+            <input type="text" id="helpSearch" placeholder="🔍 Tìm kiếm trợ giúp...">
+        </div>
+    </div>
+
+    <div class="help-content">
+        <!-- Sidebar Navigation -->
+        <aside class="help-sidebar">
+            <nav class="help-nav">
+                <button class="help-nav-item active" data-section="getting-started">
+                    🚀 Bắt đầu nhanh
+                </button>
+                <button class="help-nav-item" data-section="account-management">
+                    👤 Quản lý tài khoản
+                </button>
+                <button class="help-nav-item" data-section="proxy-setup">
+                    🌐 Cấu hình Proxy
+                </button>
+                <button class="help-nav-item" data-section="tasks">
+                    📋 Tác vụ tự động
+                </button>
+                <button class="help-nav-item" data-section="webhook">
+                    📡 Facebook Webhook
+                </button>
+                <button class="help-nav-item" data-section="telegram">
+                    📱 Telegram Bot
+                </button>
+                <button class="help-nav-item" data-section="plugins">
+                    🔌 Plugin System
+                </button>
+                <button class="help-nav-item" data-section="troubleshooting">
+                    🔧 Xử lý sự cố
+                </button>
+                <button class="help-nav-item" data-section="api-docs">
+                    📚 API Documentation
+                </button>
+                <button class="help-nav-item" data-section="faq">
+                    💡 FAQ
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Help Content -->
+        <main class="help-main" id="helpMain">
+            <!-- Content will be loaded here -->
+        </main>
+    </div>
+</div>
+
+<style>
+.help-container {
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.help-header {
+    margin-bottom: 30px;
+}
+
+.help-header h2 {
+    font-size: 24px;
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+.search-help input {
+    width: 100%;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #e0e0e0;
+    font-size: 14px;
+}
+
+.help-content {
+    display: flex;
+    gap: 30px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.help-sidebar {
+    width: 250px;
+    background: #1a1a2e;
+    border-radius: 12px;
+    padding: 20px 0;
+    overflow-y: auto;
+}
+
+.help-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.help-nav-item {
+    width: 100%;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    color: #b0b0b0;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.help-nav-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    border-left-color: #667eea;
+}
+
+.help-nav-item.active {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+    border-left-color: #667eea;
+    font-weight: 600;
+}
+
+.help-main {
+    flex: 1;
+    background: #1a1a2e;
+    border-radius: 12px;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.help-section {
+    display: none;
+}
+
+.help-section.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.help-section h3 {
+    font-size: 22px;
+    color: #fff;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.help-section h4 {
+    font-size: 18px;
+    color: #667eea;
+    margin: 25px 0 15px 0;
+}
+
+.help-section p {
+    color: #b0b0b0;
+    line-height: 1.8;
+    margin-bottom: 15px;
+}
+
+.help-section ul, .help-section ol {
+    color: #b0b0b0;
+    line-height: 2;
+    margin-bottom: 15px;
+    padding-left: 25px;
+}
+
+.help-section code {
+    background: #0f0f1e;
+    color: #4ecca3;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+}
+
+.help-section pre {
+    background: #0f0f1e;
+    color: #4ecca3;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 20px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.help-section pre code {
+    background: transparent;
+    padding: 0;
+}
+
+.warning-box {
+    background: rgba(243, 156, 18, 0.1);
+    border-left: 4px solid #f39c12;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.warning-box strong {
+    color: #f39c12;
+}
+
+.info-box {
+    background: rgba(52, 152, 219, 0.1);
+    border-left: 4px solid #3498db;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.info-box strong {
+    color: #3498db;
+}
+
+.success-box {
+    background: rgba(46, 204, 113, 0.1);
+    border-left: 4px solid #2ecc71;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.success-box strong {
+    color: #2ecc71;
+}
+
+.step-list {
+    counter-reset: step-counter;
+    list-style: none;
+    padding-left: 0;
+}
+
+.step-list li {
+    counter-increment: step-counter;
+    margin-bottom: 20px;
+    padding-left: 40px;
+    position: relative;
+}
+
+.step-list li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+</style>
+
+<script>
+const helpContent = {
+    'getting-started': `
+        <div class="help-section active" id="section-getting-started">
+            <h3>🚀 Bắt đầu nhanh với Bi Ads Multi Tool PRO v3.0</h3>
+            
+            <div class="success-box">
+                <strong>Chào mừng!</strong> Đây là phiên bản nâng cấp hoàn toàn mới với nhiều tính năng mạnh mẽ.
+            </div>
+
+            <h4>Cài đặt và khởi động</h4>
+            <ol class="step-list">
+                <li><strong>Cài đặt dependencies:</strong>
+                    <pre><code>cd backend
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\\Scripts\\activate   # Windows
+pip install -r requirements.txt</code></pre>
+                </li>
+                <li><strong>Cấu hình môi trường:</strong>
+                    <p>Copy file <code>.env.example</code> thành <code>.env</code> và điền thông tin:</p>
+                    <pre><code>FACEBOOK_APP_ID=your_app_id
+FACEBOOK_APP_SECRET=your_app_secret
+TELEGRAM_BOT_TOKEN=your_bot_token
+TELEGRAM_CHAT_ID=your_chat_id</code></pre>
+                </li>
+                <li><strong>Khởi động Backend API:</strong>
+                    <pre><code>cd backend
+python main.py</code></pre>
+                    <p>API sẽ chạy tại: <code>http://localhost:8000</code></p>
+                </li>
+                <li><strong>Khởi động Electron App:</strong>
+                    <pre><code>npm install
+npm start</code></pre>
+                </li>
+            </ol>
+
+            <h4>Tính năng mới trong v3.0</h4>
+            <ul>
+                <li>✅ <strong>Facebook Webhook Integration</strong> - Nhận sự kiện real-time</li>
+                <li>✅ <strong>Telegram Bot</strong> - Thông báo tức thì về tasks và events</li>
+                <li>✅ <strong>Plugin System</strong> - Mở rộng chức năng dễ dàng</li>
+                <li>✅ <strong>Professional UI</strong> - Giao diện hiện đại, elegant</li>
+                <li>✅ <strong>Settings Panel</strong> - Cấu hình toàn diện</li>
+                <li>✅ <strong>Multi-threading</strong> - Xử lý đa tài khoản song song</li>
+            </ul>
+
+            <div class="warning-box">
+                <strong>Lưu ý:</strong> Đảm bảo bạn đã cấu hình đầy đủ Facebook App và Telegram Bot trước khi sử dụng các tính năng webhook và notification.
+            </div>
+        </div>
+    `,
+    
+    'account-management': `
+        <div class="help-section" id="section-account-management">
+            <h3>👤 Quản lý tài khoản Facebook</h3>
+            
+            <h4>Import tài khoản từ file via.txt</h4>
+            <p>Định dạng file via.txt được hỗ trợ:</p>
+            <pre><code>UID|USERNAME|PASSWORD|EMAIL|2FA_KEY|COOKIES|ACCESS_TOKEN
+100012345678|john.doe|pass123|john@email.com|ABCD1234|[cookies_json]|EAABsb...</code></pre>
+
+            <div class="info-box">
+                <strong>Mẹo:</strong> File via.txt có thể chỉ chứa UID và cookies là đủ để import. Các trường khác là optional.
+            </div>
+
+            <h4>Các phương thức login được hỗ trợ</h4>
+            <ul>
+                <li><strong>Cookies</strong> - Phổ biến nhất, an toàn và ổn định</li>
+                <li><strong>Access Token</strong> - Sử dụng cho Facebook Graph API</li>
+                <li><strong>Email/Password</strong> - Login trực tiếp (yêu cầu 2FA key nếu có)</li>
+            </ul>
+
+            <h4>Quản lý trạng thái tài khoản</h4>
+            <ul>
+                <li><code>active</code> - Tài khoản hoạt động bình thường</li>
+                <li><code>inactive</code> - Tài khoản tạm ngưng sử dụng</li>
+                <li><code>checkpoint</code> - Tài khoản bị checkpoint</li>
+                <li><code>banned</code> - Tài khoản bị khóa vĩnh viễn</li>
+            </ul>
+
+            <h4>API Endpoints</h4>
+            <pre><code>GET    /api/accounts          - Lấy danh sách tài khoản
+POST   /api/accounts          - Tạo tài khoản mới
+GET    /api/accounts/{id}     - Xem chi tiết
+PUT    /api/accounts/{id}     - Cập nhật thông tin
+DELETE /api/accounts/{id}     - Xóa tài khoản
+POST   /api/accounts/import-via - Import từ via.txt</code></pre>
+        </div>
+    `,
+    
+    'webhook': `
+        <div class="help-section" id="section-webhook">
+            <h3>📡 Cấu hình Facebook Webhook</h3>
+            
+            <h4>Bước 1: Tạo Facebook App</h4>
+            <ol class="step-list">
+                <li>Truy cập <a href="https://developers.facebook.com/apps/" target="_blank">Facebook Developers</a></li>
+                <li>Click "Create App" → Chọn loại app phù hợp</li>
+                <li>Điền thông tin app và tạo</li>
+                <li>Vào Settings → Basic → Copy App ID và App Secret</li>
+            </ol>
+
+            <h4>Bước 2: Cấu hình Webhook</h4>
+            <ol class="step-list">
+                <li>Vào Products → Add Product → Chọn "Webhooks"</li>
+                <li>Chọn "Page" → Click "Subscribe to this object"</li>
+                <li>Callback URL: <code>https://your-domain.com/webhook</code></li>
+                <li>Verify Token: Nhập token bạn đã cấu hình trong .env</li>
+                <li>Chọn các subscription fields:
+                    <ul>
+                        <li>feed - Bài viết mới/cập nhật</li>
+                        <li>comments - Bình luận</li>
+                        <li>reactions - Reactions (like, love, etc.)</li>
+                        <li>mention - Được mention</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <h4>Bước 3: Kích hoạt Webhook trong code</h4>
+            <p>File <code>backend/main.py</code> đã có sẵn webhook endpoints:</p>
+            <pre><code>GET  /webhook - Verification endpoint (Facebook gọi để verify)
+POST /webhook - Nhận webhook events từ Facebook</code></pre>
+
+            <div class="warning-box">
+                <strong>Bảo mật:</strong> Webhook sử dụng HMAC SHA256 signature verification để đảm bảo request đến từ Facebook.
+            </div>
+
+            <h4>Webhook Event Flow</h4>
+            <pre><code>Facebook → POST /webhook → Verify signature → Process event → 
+Save to DB → Send Telegram notification</code></pre>
+
+            <div class="success-box">
+                <strong>Tự động hóa:</strong> Khi webhook nhận được event, hệ thống tự động:
+                <ul>
+                    <li>Lưu event vào database</li>
+                    <li>Gửi thông báo lên Telegram</li>
+                    <li>Trigger các plugin handler (nếu có)</li>
+                </ul>
+            </div>
+        </div>
+    `,
+    
+    'telegram': `
+        <div class="help-section" id="section-telegram">
+            <h3>📱 Cấu hình Telegram Bot</h3>
+            
+            <h4>Tạo Telegram Bot</h4>
+            <ol class="step-list">
+                <li>Mở Telegram và tìm <code>@BotFather</code></li>
+                <li>Gửi lệnh <code>/newbot</code></li>
+                <li>Đặt tên cho bot (ví dụ: "Bi Ads Notifier")</li>
+                <li>Đặt username cho bot (phải kết thúc bằng "bot")</li>
+                <li>Copy Bot Token được cung cấp</li>
+            </ol>
+
+            <h4>Lấy Chat ID</h4>
+            <ol class="step-list">
+                <li>Tìm <code>@userinfobot</code> trên Telegram</li>
+                <li>Gửi bất kỳ tin nhắn nào</li>
+                <li>Bot sẽ trả về Chat ID của bạn</li>
+                <li>Copy Chat ID này</li>
+            </ol>
+
+            <h4>Cấu hình trong .env</h4>
+            <pre><code>TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
+TELEGRAM_CHAT_ID=987654321</code></pre>
+
+            <h4>Các loại notification được hỗ trợ</h4>
+            <ul>
+                <li><strong>Task Notifications</strong> - Thông báo về trạng thái tasks</li>
+                <li><strong>Webhook Events</strong> - Sự kiện từ Facebook</li>
+                <li><strong>System Alerts</strong> - Cảnh báo lỗi hệ thống</li>
+                <li><strong>Custom Notifications</strong> - Thông báo tùy chỉnh</li>
+            </ul>
+
+            <h4>Bot Commands</h4>
+            <pre><code>/start    - Bắt đầu bot
+/help     - Xem danh sách lệnh
+/status   - Kiểm tra trạng thái hệ thống
+/tasks    - Xem danh sách tasks đang chạy
+/accounts - Xem thông tin tài khoản
+/stats    - Xem thống kê tổng quan</code></pre>
+
+            <div class="info-box">
+                <strong>Zero Dependencies:</strong> Telegram Bot module được implement bằng <code>urllib</code> không cần thư viện ngoài.
+            </div>
+        </div>
+    `,
+    
+    'faq': `
+        <div class="help-section" id="section-faq">
+            <h3>💡 Câu hỏi thường gặp (FAQ)</h3>
+            
+            <h4>Q: Làm sao để import nhiều tài khoản cùng lúc?</h4>
+            <p><strong>A:</strong> Sử dụng chức năng import từ file via.txt. File có thể chứa hàng nghìn tài khoản, hệ thống sẽ tự động xử lý và validate.</p>
+
+            <h4>Q: Có thể chạy nhiều tasks cùng lúc không?</h4>
+            <p><strong>A:</strong> Có! Hệ thống hỗ trợ multi-threading với ChromeDriver ẩn. Bạn có thể cấu hình số lượng concurrent tasks trong Settings.</p>
+
+            <h4>Q: Proxy bắt buộc phải có không?</h4>
+            <p><strong>A:</strong> Không bắt buộc nhưng rất khuyến khích. Sử dụng proxy giúp tránh bị Facebook phát hiện và checkpoint khi chạy nhiều tài khoản.</p>
+
+            <h4>Q: Webhook không nhận được events?</h4>
+            <p><strong>A:</strong> Kiểm tra:
+                <ul>
+                    <li>Server của bạn có public URL và accessible từ internet</li>
+                    <li>Callback URL đúng định dạng: <code>https://domain.com/webhook</code></li>
+                    <li>Verify token khớp với token trong .env</li>
+                    <li>App đã subscribe đúng các fields (feed, comments, etc.)</li>
+                </ul>
+            </p>
+
+            <h4>Q: Telegram không gửi được thông báo?</h4>
+            <p><strong>A:</strong> Đảm bảo:
+                <ul>
+                    <li>Bot token đúng và bot đang active</li>
+                    <li>Chat ID đúng</li>
+                    <li>Bạn đã nhắn tin với bot ít nhất 1 lần</li>
+                    <li>Test bằng nút "Test thông báo" trong Settings</li>
+                </ul>
+            </p>
+
+            <h4>Q: Database bị lỗi hoặc corrupted?</h4>
+            <p><strong>A:</strong> Backup và restore:
+                <pre><code># Backup
+cp bi_ads.db bi_ads.db.backup
+
+# Restore
+cp bi_ads.db.backup bi_ads.db</code></pre>
+                Hoặc xóa file database để tạo mới (mất dữ liệu cũ).
+            </p>
+
+            <h4>Q: Plugin không hoạt động?</h4>
+            <p><strong>A:</strong> Kiểm tra:
+                <ul>
+                    <li>Plugin đã được enable trong Plugin Manager</li>
+                    <li>Dependencies của plugin đã được cài đặt</li>
+                    <li>Xem logs để tìm lỗi cụ thể</li>
+                </ul>
+            </p>
+
+            <h4>Q: Làm sao để nâng cấp lên PostgreSQL?</h4>
+            <p><strong>A:</strong> 
+                <ol>
+                    <li>Cài PostgreSQL server</li>
+                    <li>Tạo database: <code>createdb bi_ads</code></li>
+                    <li>Update .env: <code>DATABASE_URL=postgresql+asyncpg://user:pass@localhost/bi_ads</code></li>
+                    <li>Restart server</li>
+                </ol>
+            </p>
+
+            <div class="info-box">
+                <strong>Cần hỗ trợ thêm?</strong> 
+                <ul>
+                    <li>📧 Email: support@biads.com</li>
+                    <li>💬 Telegram: @BiAdsSupport</li>
+                    <li>🌐 Website: https://biads.com</li>
+                </ul>
+            </div>
+        </div>
+    `
+};
+
+// Help navigation
+const helpNav = {
+    init() {
+        document.querySelectorAll('.help-nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const section = e.target.dataset.section;
+                this.showSection(section);
+            });
+        });
+
+        // Search functionality
+        document.getElementById('helpSearch').addEventListener('input', (e) => {
+            this.search(e.target.value);
+        });
+
+        // Load all sections
+        this.loadAllSections();
+    },
+
+    loadAllSections() {
+        const container = document.getElementById('helpMain');
+        container.innerHTML = '';
+
+        for (const [key, content] of Object.entries(helpContent)) {
+            const div = document.createElement('div');
+            div.innerHTML = content;
+            container.appendChild(div.firstElementChild);
+        }
+
+        // Show first section
+        this.showSection('getting-started');
+    },
+
+    showSection(sectionId) {
+        // Update nav
+        document.querySelectorAll('.help-nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+        // Show section
+        document.querySelectorAll('.help-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        document.getElementById(`section-${sectionId}`).classList.add('active');
+    },
+
+    search(query) {
+        if (!query) {
+            // Show all sections
+            document.querySelectorAll('.help-section').forEach(s => s.style.display = 'none');
+            document.getElementById('section-getting-started').style.display = 'block';
+            return;
+        }
+
+        query = query.toLowerCase();
+        let found = false;
+
+        document.querySelectorAll('.help-section').forEach(section => {
+            const text = section.textContent.toLowerCase();
+            if (text.includes(query)) {
+                section.style.display = 'block';
+                section.classList.add('active');
+                found = true;
+            } else {
+                section.style.display = 'none';
+                section.classList.remove('active');
+            }
+        });
+
+        if (!found) {
+            app.addLog('warning', `Không tìm thấy kết quả cho: "${query}"`);
+        }
+    }
+};
+
+// Initialize
+helpNav.init();
+</script>

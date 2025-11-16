@@ -1,153 +1,298 @@
-// Renderer Process Script
-// File này chạy trong renderer process và có thể truy cập DOM
+// Bi Ads - Multi Tool PRO v2.0 - Main Renderer Script
+// This file handles navigation, UI interactions, and tool loading
 
-// Đợi DOM load xong
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('Renderer process đã sẵn sàng!');
+// API Configuration
+const API_BASE_URL = 'http://localhost:8000';
 
-    // Load thông tin ứng dụng
-    await loadAppInfo();
+// Global App State
+const app = {
+    currentTool: 'dashboard',
+    user: null,
+    backendConnected: false
+};
 
-    // Setup event listeners
-    setupEventListeners();
+// Initialize App
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Bi Ads - Multi Tool PRO v2.0 loaded!');
+    
+    // Check backend connection
+    checkBackendConnection();
+    
+    // Setup navigation
+    setupNavigation();
+    
+    // Load default tool
+    loadTool('dashboard');
+    
+    // Setup top bar actions
+    setupTopBarActions();
+    
+    // Check backend every 10 seconds
+    setInterval(checkBackendConnection, 10000);
 });
 
-// Load thông tin ứng dụng
-async function loadAppInfo() {
-    try {
-        // Lấy phiên bản ứng dụng
-        const version = await window.electronAPI.getAppVersion();
-        document.getElementById('app-version').textContent = version;
-
-        // Lấy đường dẫn ứng dụng
-        const appPath = await window.electronAPI.getAppPath();
-        document.getElementById('app-path').textContent = appPath;
-
-        // Hiển thị thông tin hệ thống
-        document.getElementById('platform').textContent = window.electronAPI.platform;
-        document.getElementById('node-version').textContent = window.electronAPI.nodeVersion;
-        document.getElementById('chrome-version').textContent = window.electronAPI.chromeVersion;
-        document.getElementById('electron-version').textContent = window.electronAPI.electronVersion;
-    } catch (error) {
-        console.error('Lỗi khi load thông tin:', error);
-        showOutput('Lỗi: ' + error.message, 'error');
-    }
-}
-
-// Setup event listeners cho các nút
-function setupEventListeners() {
-    // Nút hiển thị thông báo
-    document.getElementById('btn-show-message').addEventListener('click', async () => {
-        try {
-            await window.electronAPI.showMessage('Xin chào từ Electron! 👋');
-            showOutput('Đã hiển thị thông báo thành công!', 'success');
-        } catch (error) {
-            showOutput('Lỗi: ' + error.message, 'error');
-        }
-    });
-
-    // Nút mở file
-    document.getElementById('btn-open-file').addEventListener('click', async () => {
-        try {
-            const result = await window.electronAPI.openFileDialog();
-            if (!result.canceled && result.filePaths.length > 0) {
-                showOutput(`Đã chọn file:\n${result.filePaths[0]}`, 'success');
-            } else {
-                showOutput('Không có file nào được chọn', 'info');
-            }
-        } catch (error) {
-            showOutput('Lỗi: ' + error.message, 'error');
-        }
-    });
-
-    // Nút lưu file
-    document.getElementById('btn-save-file').addEventListener('click', async () => {
-        try {
-            const result = await window.electronAPI.saveFileDialog();
-            if (!result.canceled) {
-                showOutput(`Đường dẫn lưu file:\n${result.filePath}`, 'success');
-            } else {
-                showOutput('Đã hủy lưu file', 'info');
-            }
-        } catch (error) {
-            showOutput('Lỗi: ' + error.message, 'error');
-        }
-    });
-
-    // Nút cập nhật thông tin
-    document.getElementById('btn-get-info').addEventListener('click', async () => {
-        await loadAppInfo();
-        showOutput('Đã cập nhật thông tin ứng dụng!', 'success');
-    });
-
-    // Nút xóa
-    document.getElementById('btn-clear').addEventListener('click', () => {
-        document.getElementById('demo-input').value = '';
-        document.getElementById('demo-textarea').value = '';
-        showOutput('Đã xóa nội dung!', 'info');
-    });
-
-    // Nút lưu
-    document.getElementById('btn-save').addEventListener('click', () => {
-        const inputValue = document.getElementById('demo-input').value;
-        const textareaValue = document.getElementById('demo-textarea').value;
-
-        if (inputValue || textareaValue) {
-            const data = {
-                input: inputValue,
-                note: textareaValue,
-                timestamp: new Date().toLocaleString('vi-VN')
-            };
-            showOutput(JSON.stringify(data, null, 2), 'success');
-        } else {
-            showOutput('Vui lòng nhập nội dung trước khi lưu!', 'warning');
-        }
-    });
-
-    // Lắng nghe sự kiện từ main process
-    window.electronAPI.onFileOpened((filePath) => {
-        showOutput(`File được mở từ menu:\n${filePath}`, 'info');
+// Setup Navigation
+function setupNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const tool = item.getAttribute('data-tool');
+            
+            // Remove active class from all items
+            navItems.forEach(nav => nav.classList.remove('active'));
+            
+            // Add active class to clicked item
+            item.classList.add('active');
+            
+            // Load the tool
+            loadTool(tool);
+        });
     });
 }
 
-// Hiển thị kết quả trong output box
-function showOutput(message, type = 'info') {
-    const outputBox = document.getElementById('output');
-    const timestamp = new Date().toLocaleTimeString('vi-VN');
+// Load Tool Content
+function loadTool(toolName) {
+    app.currentTool = toolName;
+    const container = document.getElementById('contentContainer');
+    const toolNameEl = document.getElementById('currentToolName');
     
-    let emoji = 'ℹ️';
-    let color = '#3498db';
+    // Update breadcrumb
+    const toolNames = {
+        'dashboard': 'Trang Chủ',
+        'facebook': 'Facebook Pro',
+        'instagram': 'Instagram Pro',
+        'youtube': 'YouTube Pro',
+        'tiktok': 'TikTok Pro',
+        'tools': 'Công Cụ',
+        'settings': 'Cài Đặt'
+    };
     
-    switch(type) {
-        case 'success':
-            emoji = '✅';
-            color = '#2ecc71';
+    toolNameEl.textContent = toolNames[toolName] || toolName;
+    
+    // Load tool content
+    switch(toolName) {
+        case 'dashboard':
+            container.innerHTML = renderDashboard();
             break;
-        case 'error':
-            emoji = '❌';
-            color = '#e74c3c';
+        case 'facebook':
+            if (window.facebookPro && typeof window.facebookPro.init === 'function') {
+                window.facebookPro.init();
+            } else {
+                container.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">⚠️ Facebook Pro Module</div>
+                        <div class="card-body">
+                            <p style="color: #f39c12;">Module đang được tải...</p>
+                        </div>
+                    </div>
+                `;
+            }
             break;
-        case 'warning':
-            emoji = '⚠️';
-            color = '#f39c12';
+        case 'instagram':
+            container.innerHTML = renderComingSoon('Instagram');
             break;
+        case 'youtube':
+            container.innerHTML = renderComingSoon('YouTube');
+            break;
+        case 'tiktok':
+            container.innerHTML = renderComingSoon('TikTok');
+            break;
+        case 'tools':
+            container.innerHTML = renderTools();
+            break;
+        case 'settings':
+            container.innerHTML = renderSettings();
+            break;
+        default:
+            container.innerHTML = renderDashboard();
     }
-    
-    outputBox.innerHTML = `
-        <div style="color: ${color}; font-weight: bold; margin-bottom: 10px;">
-            ${emoji} ${type.toUpperCase()} - ${timestamp}
+}
+
+// Render Dashboard
+function renderDashboard() {
+    return `
+        <div class="card">
+            <div class="card-header">📊 Dashboard Overview</div>
+            <div class="card-body">
+                <div class="grid-3">
+                    <div class="stat-card">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Facebook Accounts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Instagram Accounts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">0</div>
+                        <div class="stat-label">Total Tasks</div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div style="color: #2c3e50;">
-            ${message}
+        
+        <div class="card">
+            <div class="card-header">🚀 Quick Actions</div>
+            <div class="card-body">
+                <div class="grid-2">
+                    <button onclick="loadTool('facebook')">
+                        📘 Open Facebook Pro
+                    </button>
+                    <button onclick="loadTool('instagram')">
+                        📷 Open Instagram
+                    </button>
+                    <button onclick="loadTool('youtube')">
+                        ▶️ Open YouTube
+                    </button>
+                    <button onclick="loadTool('tools')">
+                        🔧 Open Tools
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">📋 Recent Activity</div>
+            <div class="card-body">
+                <p style="color: #888; text-align: center;">Chưa có hoạt động nào</p>
+            </div>
         </div>
     `;
 }
 
-// Log thông tin khi có lỗi
-window.addEventListener('error', (event) => {
-    console.error('Window error:', event.error);
-});
+// Render Coming Soon
+function renderComingSoon(toolName) {
+    return `
+        <div class="card">
+            <div class="card-header">🚧 ${toolName}</div>
+            <div class="card-body">
+                <div style="text-align: center; padding: 40px;">
+                    <h2 style="font-size: 48px; margin-bottom: 20px;">🚧</h2>
+                    <h3 style="color: #fff; margin-bottom: 10px;">Coming Soon</h3>
+                    <p style="color: #888;">Module ${toolName} đang được phát triển</p>
+                </div>
+            </div>
+        </div>
+    `;
+}
 
-window.addEventListener('unhandledrejection', (event) => {
-    console.error('Unhandled promise rejection:', event.reason);
-});
+// Render Tools
+function renderTools() {
+    return `
+        <div class="card">
+            <div class="card-header">🔧 Utility Tools</div>
+            <div class="card-body">
+                <div class="grid-2">
+                    <button onclick="app.showNotification('Text Generator', 'Feature coming soon!')">
+                        📝 Text Generator
+                    </button>
+                    <button onclick="app.showNotification('Image Editor', 'Feature coming soon!')">
+                        🖼️ Image Editor
+                    </button>
+                    <button onclick="app.showNotification('Video Downloader', 'Feature coming soon!')">
+                        📥 Video Downloader
+                    </button>
+                    <button onclick="app.showNotification('Hash Generator', 'Feature coming soon!')">
+                        🔐 Hash Generator
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Render Settings
+function renderSettings() {
+    return `
+        <div class="card">
+            <div class="card-header">⚙️ Application Settings</div>
+            <div class="card-body">
+                <div style="margin-bottom: 20px;">
+                    <label>
+                        <input type="checkbox" checked>
+                        Enable notifications
+                    </label>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label>
+                        <input type="checkbox" checked>
+                        Auto-save logs
+                    </label>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label>
+                        <input type="checkbox">
+                        Dark mode (always on)
+                    </label>
+                </div>
+                <button class="btn-primary">💾 Save Settings</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">ℹ️ About</div>
+            <div class="card-body">
+                <p style="margin-bottom: 10px;"><strong>Version:</strong> 1.0.0</p>
+                <p style="margin-bottom: 10px;"><strong>Build:</strong> 2024.01</p>
+                <p style="margin-bottom: 10px;"><strong>Author:</strong> Multi Tool Team</p>
+            </div>
+        </div>
+    `;
+}
+
+// Setup Top Bar Actions
+function setupTopBarActions() {
+    const btnNotifications = document.getElementById('btnNotifications');
+    const btnHelp = document.getElementById('btnHelp');
+    
+    btnNotifications.addEventListener('click', () => {
+        app.showNotification('Notifications', 'No new notifications');
+    });
+    
+    btnHelp.addEventListener('click', () => {
+        app.showNotification('Help', 'Documentation coming soon!');
+    });
+}
+
+// Show Notification
+app.showNotification = function(title, message, type = 'info') {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    
+    const icons = {
+        'info': 'ℹ️',
+        'success': '✅',
+        'error': '❌',
+        'warning': '⚠️'
+    };
+    
+    modal.innerHTML = `
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <div class="modal-title">${icons[type]} ${title}</div>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: #e0e0e0;">${message}</p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="this.closest('.modal-overlay').remove()">OK</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Auto close after 3 seconds
+    setTimeout(() => {
+        if (modal.parentElement) {
+            modal.remove();
+        }
+    }, 3000);
+};
+
+// Export app to window for access in other scripts
+window.app = app;
+
+console.log('Renderer script initialized!');
