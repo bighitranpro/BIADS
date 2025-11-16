@@ -1290,6 +1290,31 @@ const BiAds = {
         } catch (error) {
             content.innerHTML = '<div class="info-box"><h4>❓ Help</h4><p>Loading help...</p></div>';
         }
+    },
+    
+    // Load Test API Page
+    loadTestAPIPage: async function() {
+        const content = document.getElementById('contentBody');
+        const title = document.getElementById('contentTitle');
+        title.textContent = '🧪 Test API & Debug Tool';
+        
+        try {
+            const response = await fetch('test-api-content.html');
+            const html = await response.text();
+            content.innerHTML = html;
+            
+            // Execute any scripts in the loaded content
+            const scripts = content.querySelectorAll('script');
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                document.body.appendChild(newScript);
+                document.body.removeChild(newScript);
+            });
+        } catch (error) {
+            console.error('Error loading test API page:', error);
+            content.innerHTML = '<div class="info-box"><h4>🧪 Test API</h4><p>Đang tải công cụ test...</p></div>';
+        }
     }
 };
 

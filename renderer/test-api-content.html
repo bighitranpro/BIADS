@@ -1,0 +1,443 @@
+<style>
+    .test-api-page {
+        padding: 20px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .test-api-container {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-api-header {
+        margin-bottom: 30px;
+    }
+
+    .test-api-header h1 {
+        color: #667eea;
+        font-size: 28px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .test-api-header .subtitle {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .status-box {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-left: 4px solid #667eea;
+    }
+
+    .status-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+
+    .status-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .status-label {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .status-value {
+        color: #666;
+        font-family: 'Courier New', monospace;
+    }
+
+    .button-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .test-btn {
+        padding: 15px 30px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
+    }
+
+    .test-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .test-btn:active {
+        transform: translateY(0);
+    }
+
+    .test-btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .test-btn-success {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    .test-btn-info {
+        background: linear-gradient(135deg, #3494e6 0%, #ec6ead 100%);
+    }
+
+    .log-container {
+        background: #1e1e1e;
+        border-radius: 10px;
+        padding: 20px;
+        max-height: 500px;
+        overflow-y: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+    }
+
+    .log-entry {
+        margin-bottom: 8px;
+        padding: 8px;
+        border-radius: 5px;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .log-info {
+        color: #3498db;
+    }
+
+    .log-success {
+        color: #2ecc71;
+    }
+
+    .log-error {
+        color: #e74c3c;
+    }
+
+    .log-warning {
+        color: #f39c12;
+    }
+
+    .log-timestamp {
+        color: #888;
+        font-size: 11px;
+        margin-right: 10px;
+    }
+
+    .test-spinner {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s linear infinite;
+        margin-left: 10px;
+        vertical-align: middle;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .test-alert {
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideIn 0.3s ease;
+    }
+
+    .test-alert-success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .test-alert-error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .test-alert-info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    .test-alert .icon {
+        font-size: 20px;
+    }
+</style>
+
+<div class="test-api-page">
+    <div class="test-api-container">
+        <div class="test-api-header">
+            <h1>🧪 Test Settings API</h1>
+            <p class="subtitle">Kiểm tra kết nối và chức năng lưu cài đặt - Debug tool cho developers</p>
+        </div>
+
+        <div class="status-box">
+            <div class="status-item">
+                <span class="status-label">API URL:</span>
+                <span class="status-value" id="testApiUrl">http://localhost:8000</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Trạng thái Backend:</span>
+                <span class="status-value" id="testBackendStatus">⏳ Đang kiểm tra...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Lần test cuối:</span>
+                <span class="status-value" id="testLastTest">Chưa test</span>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="test-btn test-btn-info" onclick="testAPIConnection()">
+                🔌 Kiểm tra kết nối
+            </button>
+            <button class="test-btn test-btn-primary" onclick="testAPIGetSettings()">
+                📥 Test GET Settings
+            </button>
+            <button class="test-btn test-btn-success" onclick="testAPISaveSettings()">
+                💾 Test SAVE Settings
+            </button>
+        </div>
+
+        <div id="testAlertContainer"></div>
+
+        <div class="log-container" id="testLogContainer">
+            <div class="log-entry log-info">
+                <span class="log-timestamp">[READY]</span>
+                <span>Sẵn sàng kiểm tra API. Nhấn nút để bắt đầu...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const API_URL = 'http://localhost:8000';
+        let logCount = 0;
+
+        // Auto-check connection when page loads
+        setTimeout(testAPIConnection, 500);
+
+        window.testAPILog = function(message, type = 'info') {
+            logCount++;
+            const logContainer = document.getElementById('testLogContainer');
+            const timestamp = new Date().toLocaleTimeString('vi-VN');
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span>
+                <span>${message}</span>
+            `;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        };
+
+        window.testAPIShowAlert = function(message, type) {
+            const alertContainer = document.getElementById('testAlertContainer');
+            const alert = document.createElement('div');
+            alert.className = `test-alert test-alert-${type}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️'
+            };
+            
+            alert.innerHTML = `
+                <span class="icon">${icons[type] || 'ℹ️'}</span>
+                <span>${message}</span>
+            `;
+            
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        };
+
+        window.testAPIConnection = async function() {
+            testAPILog('🔍 Đang kiểm tra kết nối tới backend...', 'info');
+            const statusEl = document.getElementById('testBackendStatus');
+            statusEl.innerHTML = '⏳ Đang kiểm tra... <span class="test-spinner"></span>';
+            
+            try {
+                const response = await fetch(`${API_URL}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusEl.innerHTML = '✅ Kết nối thành công';
+                    statusEl.style.color = '#2ecc71';
+                    testAPILog('✅ Backend đang hoạt động bình thường', 'success');
+                    testAPILog(`📊 Phiên bản: ${data.version || 'N/A'} | Status: ${data.status}`, 'info');
+                    testAPIShowAlert('Kết nối backend thành công!', 'success');
+                } else {
+                    throw new Error('Backend không phản hồi đúng');
+                }
+            } catch (error) {
+                statusEl.innerHTML = '❌ Không kết nối được';
+                statusEl.style.color = '#e74c3c';
+                testAPILog(`❌ Lỗi kết nối: ${error.message}`, 'error');
+                testAPIShowAlert(`Không thể kết nối backend: ${error.message}`, 'error');
+            }
+            
+            updateTestLastTest();
+        };
+
+        window.testAPIGetSettings = async function() {
+            testAPILog('📥 Đang test GET /api/settings/...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/settings/`);
+                testAPILog(`📡 Response status: ${response.status}`, 'info');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                testAPILog('📦 Đã nhận được dữ liệu:', 'success');
+                testAPILog(JSON.stringify(data, null, 2), 'info');
+                
+                if (data.success && data.settings) {
+                    testAPILog('✅ GET settings thành công!', 'success');
+                    testAPILog(`📋 Số lượng settings: ${Object.keys(data.settings).length} trường`, 'info');
+                    testAPIShowAlert('Đọc cài đặt thành công! Xem log để biết chi tiết.', 'success');
+                } else {
+                    testAPILog('⚠️ Response không có cấu trúc mong đợi', 'warning');
+                }
+                
+            } catch (error) {
+                testAPILog(`❌ Lỗi GET settings: ${error.message}`, 'error');
+                testAPIShowAlert(`Lỗi GET settings: ${error.message}`, 'error');
+            }
+            
+            updateTestLastTest();
+        };
+
+        window.testAPISaveSettings = async function() {
+            testAPILog('💾 Đang test PUT /api/settings/...', 'info');
+            
+            const testSettings = {
+                app_name: 'Bi Ads Multi Tool PRO',
+                app_version: '3.0.0',
+                language: 'vi',
+                theme: 'dark',
+                default_delay: 15,
+                default_retry: 5,
+                default_timeout: 300,
+                max_concurrent_tasks: 10,
+                auto_assign_proxy: true,
+                rotate_proxy_on_error: true,
+                check_proxy_before_use: true,
+                telegram_enabled: true,
+                telegram_bot_token: 'test_token_' + Date.now(),
+                telegram_chat_id: '123456',
+                telegram_notify_on_success: true,
+                telegram_notify_on_error: true,
+                telegram_notify_on_start: false,
+                facebook_app_id: 'test_app_' + Date.now(),
+                facebook_app_secret: 'test_secret',
+                facebook_api_version: 'v18.0',
+                webhook_verify_token: 'test_webhook',
+                enable_2fa: false,
+                session_timeout: 3600,
+                auto_logout: false,
+                auto_start_tasks: false,
+                auto_restart_failed_tasks: true,
+                save_logs_to_file: true,
+                max_log_entries: 1000,
+                cache_enabled: true,
+                cache_ttl: 300,
+                batch_size: 10,
+                debug_mode: false,
+                verbose_logging: false,
+                log_level: 'INFO',
+                api_rate_limit: 100,
+                proxy_timeout: 30,
+                auto_backup: true
+            };
+            
+            testAPILog('📤 Đang gửi dữ liệu...', 'info');
+            testAPILog(`📊 Tổng số fields: ${Object.keys(testSettings).length}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/settings/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testSettings)
+                });
+                
+                testAPILog(`📡 Response status: ${response.status}`, 'info');
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || errorData.message || `HTTP ${response.status}`);
+                }
+                
+                const result = await response.json();
+                testAPILog('📦 Response data:', 'success');
+                testAPILog(JSON.stringify(result, null, 2), 'info');
+                
+                if (result.success) {
+                    testAPILog('✅ SAVE settings THÀNH CÔNG!', 'success');
+                    testAPILog('💾 Dữ liệu đã được lưu vào: backend/data/settings.json', 'info');
+                    testAPIShowAlert('Lưu cài đặt thành công! Kiểm tra file backend/data/settings.json', 'success');
+                } else {
+                    testAPILog('⚠️ Response không có success: true', 'warning');
+                }
+                
+            } catch (error) {
+                testAPILog(`❌ Lỗi SAVE settings: ${error.message}`, 'error');
+                testAPIShowAlert(`Lỗi lưu settings: ${error.message}`, 'error');
+            }
+            
+            updateTestLastTest();
+        };
+
+        function updateTestLastTest() {
+            const now = new Date().toLocaleString('vi-VN');
+            document.getElementById('testLastTest').textContent = now;
+        }
+    })();
+</script>
