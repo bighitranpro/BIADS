@@ -234,7 +234,7 @@ const BiAds = {
                 break;
             case 'posts':
                 title.textContent = '📝 Quản lý bài viết đã đăng';
-                this.renderPostsPage(content);
+                AdvancedFeatures.renderPostsPage(content);
                 break;
             case 'messages':
                 title.textContent = '💬 Quản lý tin nhắn';

@@ -199,6 +199,9 @@ const AdvancedFeatures = {
                 </div>
             </div>
         `;
+        
+        // Load data after rendering
+        this.loadFacebookIDs();
     },
 
     // Quản lý IP thiết bị
@@ -559,6 +562,10 @@ const AdvancedFeatures = {
                 </div>
             </div>
         `;
+        
+        // Load data after rendering
+        this.loadPostAccountFilter();
+        this.loadPostedContent();
     },
 
     // Quản lý tin nhắn
@@ -1047,14 +1054,227 @@ const AdvancedFeatures = {
     // Placeholder functions for actions
     // showAddSubAccountModal: () => app.addLog('info', 'Chức năng thêm tài khoản phụ'),
     // importSubAccounts: () => app.addLog('info', 'Import tài khoản phụ'),
-    addIDsManually: () => app.addLog('info', 'Thêm ID thủ công'),
-    importIDsFromFile: () => app.addLog('info', 'Import ID từ file'),
-    scanIDsFromGroup: () => app.addLog('info', 'Quét ID từ nhóm'),
-    validateAllIDs: () => app.addLog('info', 'Kiểm tra tất cả ID'),
-    exportIDs: () => app.addLog('info', 'Xuất danh sách ID'),
-    filterIDs: () => app.addLog('info', 'Lọc ID'),
-    searchIDs: () => app.addLog('info', 'Tìm kiếm ID'),
-    selectAllIDs: (checkbox) => app.addLog('info', checkbox.checked ? 'Chọn tất cả' : 'Bỏ chọn tất cả'),
+    // ============================================
+    // FACEBOOK IDS IMPLEMENTATION
+    // ============================================
+    
+    facebookIDs: [],
+    facebookIDsStats: null,
+    
+    async loadFacebookIDs() {
+        try {
+            const response = await fetch('http://localhost:8000/api/facebook-ids/');
+            const data = await response.json();
+            this.facebookIDs = data;
+            
+            // Update table
+            const tbody = document.getElementById('idsTableBody');
+            if (!tbody) return;
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #888;">
+                            <p>Chưa có ID nào</p>
+                            <p>Nhấn "➕ Thêm ID" hoặc "🔍 Quét từ nhóm" để bắt đầu</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = data.map((fb_id, index) => {
+                const statusBadge = fb_id.status === 'valid' 
+                    ? '<span class="badge-success">Hợp lệ</span>' 
+                    : fb_id.status === 'invalid'
+                    ? '<span class="badge-danger">Không hợp lệ</span>'
+                    : '<span class="badge-warning">Đã dùng</span>';
+                
+                return `
+                    <tr>
+                        <td><input type="checkbox" class="id-checkbox" data-id="${fb_id.id}"></td>
+                        <td>${index + 1}</td>
+                        <td>${fb_id.uid}</td>
+                        <td>${fb_id.name || 'N/A'}</td>
+                        <td>${statusBadge}</td>
+                        <td>${fb_id.source || 'manual'}</td>
+                        <td>${new Date(fb_id.created_at).toLocaleDateString('vi-VN')}</td>
+                        <td>
+                            <button class="btn-sm btn-danger" onclick="AdvancedFeatures.deleteFacebookID(${fb_id.id})" title="Xóa">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Load stats
+            await this.loadFacebookIDsStats();
+            
+        } catch (error) {
+            console.error('Error loading Facebook IDs:', error);
+            BiAds.showToast('error', 'Lỗi tải Facebook IDs', error.message);
+        }
+    },
+    
+    async loadFacebookIDsStats() {
+        try {
+            const response = await fetch('http://localhost:8000/api/facebook-ids/stats');
+            const stats = await response.json();
+            this.facebookIDsStats = stats;
+            
+            // Update stats display
+            const totalElem = document.getElementById('totalIDs');
+            const validElem = document.getElementById('validIDs');
+            const usedElem = document.getElementById('usedIDs');
+            
+            if (totalElem) totalElem.textContent = stats.total_count;
+            if (validElem) validElem.textContent = stats.valid_count;
+            if (usedElem) usedElem.textContent = stats.used_count;
+            
+        } catch (error) {
+            console.error('Error loading Facebook IDs stats:', error);
+        }
+    },
+    
+    addIDsManually: () => {
+        ModalConfirmation.showInput({
+            title: '➕ Thêm Facebook ID',
+            html: `
+                <div class="input-group">
+                    <label>Facebook UID (bắt buộc)</label>
+                    <input type="text" id="modalIDUid" placeholder="100012345678" style="width: 100%;">
+                </div>
+                <div class="input-group">
+                    <label>Tên hiển thị</label>
+                    <input type="text" id="modalIDName" placeholder="Nguyễn Văn A" style="width: 100%;">
+                </div>
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="modalIDUsername" placeholder="nguyenvana" style="width: 100%;">
+                </div>
+            `,
+            confirmText: 'Thêm',
+            onConfirm: async () => {
+                const uid = document.getElementById('modalIDUid').value.trim();
+                const name = document.getElementById('modalIDName').value.trim();
+                const username = document.getElementById('modalIDUsername').value.trim();
+                
+                if (!uid) {
+                    BiAds.showToast('warning', 'Thiếu thông tin', 'Vui lòng nhập UID');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('http://localhost:8000/api/facebook-ids/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uid, name, username, source: 'manual' })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        BiAds.showToast('success', 'Thành công', result.message);
+                        await AdvancedFeatures.loadFacebookIDs();
+                    } else {
+                        BiAds.showToast('error', 'Lỗi', result.detail || 'Không thể thêm ID');
+                    }
+                } catch (error) {
+                    BiAds.showToast('error', 'Lỗi', error.message);
+                }
+            }
+        });
+    },
+    
+    importIDsFromFile: () => {
+        ModalConfirmation.showInput({
+            title: '📥 Import Facebook IDs',
+            html: `
+                <div class="info-box" style="margin-bottom: 15px;">
+                    <p><strong>Format hỗ trợ:</strong></p>
+                    <p style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px;">
+                        100012345678<br>
+                        facebook.com/profile.php?id=100012345678<br>
+                        100012345678|Nguyen Van A|nguyenvana
+                    </p>
+                </div>
+                <div class="input-group">
+                    <label>Chọn file</label>
+                    <input type="file" id="modalImportIDFile" accept=".txt" style="width: 100%;">
+                </div>
+            `,
+            confirmText: 'Import',
+            onConfirm: async () => {
+                const fileInput = document.getElementById('modalImportIDFile');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    BiAds.showToast('warning', 'Thiếu file', 'Vui lòng chọn file');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    BiAds.showToast('info', 'Đang import...', 'Vui lòng đợi');
+                    
+                    const response = await fetch('http://localhost:8000/api/facebook-ids/bulk/import?source=import', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        BiAds.showToast('success', 'Thành công', result.message);
+                        await AdvancedFeatures.loadFacebookIDs();
+                    } else {
+                        BiAds.showToast('error', 'Lỗi', result.detail || 'Không thể import');
+                    }
+                } catch (error) {
+                    BiAds.showToast('error', 'Lỗi', error.message);
+                }
+            }
+        });
+    },
+    
+    deleteFacebookID: async (id) => {
+        ModalConfirmation.showDanger({
+            title: '🗑️ Xóa Facebook ID?',
+            message: 'Bạn có chắc chắn muốn xóa ID này?',
+            confirmText: 'Xóa',
+            onConfirm: async () => {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/facebook-ids/${id}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        BiAds.showToast('success', 'Thành công', result.message);
+                        await AdvancedFeatures.loadFacebookIDs();
+                    } else {
+                        BiAds.showToast('error', 'Lỗi', result.detail || 'Không thể xóa');
+                    }
+                } catch (error) {
+                    BiAds.showToast('error', 'Lỗi', error.message);
+                }
+            }
+        });
+    },
+    
+    scanIDsFromGroup: () => BiAds.showToast('info', 'Chức năng đang phát triển', 'Quét ID từ nhóm sẽ được thêm sau'),
+    validateAllIDs: () => BiAds.showToast('info', 'Chức năng đang phát triển', 'Kiểm tra tất cả ID sẽ được thêm sau'),
+    exportIDs: () => BiAds.showToast('info', 'Chức năng đang phát triển', 'Xuất danh sách ID sẽ được thêm sau'),
+    filterIDs: () => AdvancedFeatures.loadFacebookIDs(),
+    searchIDs: () => AdvancedFeatures.loadFacebookIDs(),
+    selectAllIDs: (checkbox) => {
+        const checkboxes = document.querySelectorAll('.id-checkbox');
+        checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    },
     detectCurrentIP: () => app.addLog('info', 'Phát hiện IP hiện tại'),
     addIPManually: () => app.addLog('info', 'Thêm IP thủ công'),
     addToWhitelist: () => app.addLog('info', 'Thêm vào whitelist'),
@@ -1063,11 +1283,287 @@ const AdvancedFeatures = {
     searchWhitelist: () => app.addLog('info', 'Tìm kiếm whitelist'),
     filterWhitelist: () => app.addLog('info', 'Lọc whitelist'),
     selectAllWhitelist: (checkbox) => app.addLog('info', checkbox.checked ? 'Chọn tất cả' : 'Bỏ chọn tất cả'),
-    syncPosts: () => app.addLog('info', 'Đồng bộ bài viết'),
-    exportPosts: () => app.addLog('info', 'Xuất bài viết'),
-    searchPosts: () => app.addLog('info', 'Tìm kiếm bài viết'),
-    filterPosts: () => app.addLog('info', 'Lọc bài viết'),
-    selectAllPosts: (checkbox) => app.addLog('info', checkbox.checked ? 'Chọn tất cả' : 'Bỏ chọn tất cả'),
+    // Posted Content Management Functions
+    loadPostedContent: async function() {
+        try {
+            // Build query params from filters
+            let queryParams = new URLSearchParams();
+            
+            const accountFilter = document.getElementById('postAccountFilter')?.value;
+            if (accountFilter && accountFilter !== 'all') {
+                queryParams.append('account_id', accountFilter);
+            }
+            
+            const searchQuery = document.getElementById('postSearch')?.value.trim();
+            if (searchQuery) {
+                // Use search endpoint instead
+                const response = await fetch(`http://localhost:8000/api/posted-content/search?query=${encodeURIComponent(searchQuery)}&limit=100`);
+                const data = await response.json();
+                this.renderPostedContentTable(data, searchQuery);
+                await this.loadPostedContentStats();
+                return;
+            }
+            
+            const response = await fetch(`http://localhost:8000/api/posted-content/?${queryParams.toString()}&limit=100`);
+            const data = await response.json();
+            
+            this.renderPostedContentTable(data);
+            await this.loadPostedContentStats();
+            
+        } catch (error) {
+            BiAds.showToast('error', 'Lỗi', `Không thể tải bài viết: ${error.message}`);
+        }
+    },
+    
+    renderPostedContentTable: function(posts, searchQuery = null) {
+        const tbody = document.getElementById('postsTableBody');
+        
+        if (!posts || posts.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" style="text-align: center; padding: 40px; color: #888;">
+                        <p>Chưa có bài viết nào</p>
+                        <p>Nhấn "🔄 Đồng bộ bài viết" để tải dữ liệu</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = posts.map((post, index) => {
+            // Display content with highlighting if search query exists
+            const displayContent = searchQuery && post.highlighted_content 
+                ? post.highlighted_content 
+                : (post.content ? post.content.substring(0, 100) + (post.content.length > 100 ? '...' : '') : 'N/A');
+            
+            const accountName = post.account_info 
+                ? (post.account_info.name || post.account_info.uid)
+                : 'N/A';
+            
+            const postDate = new Date(post.posted_at || post.created_at);
+            const dateStr = postDate.toLocaleDateString('vi-VN');
+            const timeStr = postDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            
+            return `
+                <tr>
+                    <td><input type="checkbox" class="post-checkbox" data-id="${post.id}"></td>
+                    <td>${index + 1}</td>
+                    <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;" title="${post.content || ''}">
+                        ${displayContent}
+                    </td>
+                    <td>${accountName}</td>
+                    <td>
+                        <div>${dateStr}</div>
+                        <div style="font-size: 0.85em; color: #888;">${timeStr}</div>
+                    </td>
+                    <td>❤️ ${post.like_count || 0}</td>
+                    <td>💬 ${post.comment_count || 0}</td>
+                    <td>🔗 ${post.share_count || 0}</td>
+                    <td>
+                        <button class="btn-icon" onclick="AdvancedFeatures.editPost(${post.id})" title="Chỉnh sửa">✏️</button>
+                        <button class="btn-icon" onclick="AdvancedFeatures.deletePost(${post.id})" title="Xóa">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    },
+    
+    loadPostedContentStats: async function() {
+        try {
+            const response = await fetch('http://localhost:8000/api/posted-content/stats');
+            const stats = await response.json();
+            
+            document.getElementById('totalPosts').textContent = stats.total_posts || 0;
+            document.getElementById('totalLikes').textContent = stats.total_likes?.toLocaleString() || 0;
+            document.getElementById('totalComments').textContent = stats.total_comments?.toLocaleString() || 0;
+            document.getElementById('totalShares').textContent = stats.total_shares?.toLocaleString() || 0;
+            
+        } catch (error) {
+            console.error('Error loading posted content stats:', error);
+        }
+    },
+    
+    loadPostAccountFilter: async function() {
+        try {
+            const response = await fetch('http://localhost:8000/api/accounts?limit=1000');
+            const accounts = await response.json();
+            
+            const filterSelect = document.getElementById('postAccountFilter');
+            if (filterSelect) {
+                filterSelect.innerHTML = '<option value="all">Tất cả tài khoản</option>' +
+                    accounts.map(acc => 
+                        `<option value="${acc.id}">${acc.name || acc.uid}</option>`
+                    ).join('');
+            }
+        } catch (error) {
+            console.error('Error loading accounts for filter:', error);
+        }
+    },
+    
+    editPost: async function(postId) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/posted-content/${postId}`);
+            const post = await response.json();
+            
+            ModalConfirmation.showInput({
+                title: '✏️ Chỉnh sửa bài viết',
+                html: `
+                    <div class="input-group">
+                        <label>Nội dung bài viết</label>
+                        <textarea id="modalEditContent" rows="5" style="width: 100%; padding: 10px; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: white;">${post.content || ''}</textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Facebook Post ID</label>
+                        <input type="text" id="modalEditPostId" value="${post.post_id || ''}" style="width: 100%;">
+                    </div>
+                    <div class="grid-3">
+                        <div class="input-group">
+                            <label>Likes</label>
+                            <input type="number" id="modalEditLikes" value="${post.like_count || 0}" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Comments</label>
+                            <input type="number" id="modalEditComments" value="${post.comment_count || 0}" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label>Shares</label>
+                            <input type="number" id="modalEditShares" value="${post.share_count || 0}" min="0">
+                        </div>
+                    </div>
+                `,
+                confirmText: 'Cập nhật',
+                onConfirm: async () => {
+                    const updateData = {
+                        content: document.getElementById('modalEditContent').value.trim() || null,
+                        post_id: document.getElementById('modalEditPostId').value.trim() || null,
+                        like_count: parseInt(document.getElementById('modalEditLikes').value) || 0,
+                        comment_count: parseInt(document.getElementById('modalEditComments').value) || 0,
+                        share_count: parseInt(document.getElementById('modalEditShares').value) || 0
+                    };
+                    
+                    await this.updatePost(postId, updateData);
+                }
+            });
+            
+        } catch (error) {
+            BiAds.showToast('error', 'Lỗi', error.message);
+        }
+    },
+    
+    updatePost: async function(postId, data) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/posted-content/${postId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                BiAds.showToast('success', 'Thành công', result.message);
+                await this.loadPostedContent();
+            } else {
+                BiAds.showToast('error', 'Lỗi', result.detail || 'Không thể cập nhật bài viết');
+            }
+            
+        } catch (error) {
+            BiAds.showToast('error', 'Lỗi', error.message);
+        }
+    },
+    
+    deletePost: async function(postId) {
+        ModalConfirmation.showDanger({
+            title: '🗑️ Xóa bài viết?',
+            message: 'Bạn có chắc chắn muốn xóa bài viết này?',
+            details: 'Hành động này không thể hoàn tác.',
+            confirmText: 'Xóa',
+            onConfirm: async () => {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/posted-content/${postId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        BiAds.showToast('success', 'Thành công', result.message);
+                        await this.loadPostedContent();
+                    } else {
+                        BiAds.showToast('error', 'Lỗi', result.detail || 'Không thể xóa bài viết');
+                    }
+                } catch (error) {
+                    BiAds.showToast('error', 'Lỗi', error.message);
+                }
+            }
+        });
+    },
+    
+    syncPosts: () => BiAds.showToast('info', 'Chức năng đang phát triển', 'Đồng bộ bài viết từ Facebook sẽ được thêm sau'),
+    exportPosts: () => BiAds.showToast('info', 'Chức năng đang phát triển', 'Xuất danh sách bài viết sẽ được thêm sau'),
+    searchPosts: function() {
+        this.loadPostedContent();
+    },
+    filterPosts: function() {
+        this.loadPostedContent();
+    },
+    selectAllPosts: (checkbox) => {
+        const checkboxes = document.querySelectorAll('.post-checkbox');
+        checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    },
+    
+    // Bulk actions for posts (placeholders for future implementation)
+    editSelectedPosts: () => BiAds.showToast('info', 'Chức năng đang phát triển', 'Chỉnh sửa hàng loạt sẽ được thêm sau'),
+    hideSelectedPosts: () => BiAds.showToast('info', 'Chức năng đang phát triển', 'Ẩn bài viết hàng loạt sẽ được thêm sau'),
+    boostSelectedPosts: () => BiAds.showToast('info', 'Chức năng đang phát triển', 'Tăng tương tác sẽ được thêm sau'),
+    shareSelectedPosts: () => BiAds.showToast('info', 'Chức năng đang phát triển', 'Chia sẻ lại hàng loạt sẽ được thêm sau'),
+    deleteSelectedPosts: () => {
+        const selectedCheckboxes = document.querySelectorAll('.post-checkbox:checked');
+        if (selectedCheckboxes.length === 0) {
+            BiAds.showToast('warning', 'Chưa chọn', 'Vui lòng chọn ít nhất 1 bài viết');
+            return;
+        }
+        
+        const postIds = Array.from(selectedCheckboxes).map(cb => parseInt(cb.dataset.id));
+        
+        ModalConfirmation.showDanger({
+            title: '🗑️ Xóa nhiều bài viết?',
+            message: `Bạn có chắc chắn muốn xóa ${postIds.length} bài viết đã chọn?`,
+            details: 'Hành động này không thể hoàn tác.',
+            confirmText: 'Xóa tất cả',
+            onConfirm: async () => {
+                let successCount = 0;
+                let errorCount = 0;
+                
+                for (const postId of postIds) {
+                    try {
+                        const response = await fetch(`http://localhost:8000/api/posted-content/${postId}`, {
+                            method: 'DELETE'
+                        });
+                        
+                        if (response.ok) {
+                            successCount++;
+                        } else {
+                            errorCount++;
+                        }
+                    } catch (error) {
+                        errorCount++;
+                    }
+                }
+                
+                if (successCount > 0) {
+                    BiAds.showToast('success', 'Hoàn thành', `Đã xóa ${successCount} bài viết`);
+                }
+                if (errorCount > 0) {
+                    BiAds.showToast('warning', 'Có lỗi', `${errorCount} bài viết không thể xóa`);
+                }
+                
+                await AdvancedFeatures.loadPostedContent();
+            }
+        });
+    },
     composeNewMessage: () => app.addLog('info', 'Soạn tin nhắn mới'),
     refreshMessages: () => app.addLog('info', 'Làm mới tin nhắn'),
     searchConversations: () => app.addLog('info', 'Tìm kiếm hội thoại'),
