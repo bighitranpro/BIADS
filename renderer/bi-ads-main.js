@@ -510,16 +510,20 @@ const BiAds = {
             const select = document.getElementById('proxySelect');
             const proxyId = select.value ? parseInt(select.value) : null;
             
-            this.log('info', `🌐 Đang gán proxy cho tài khoản...`);
+            this.log('info', `🌐 Đang gán proxy cho tài khoản ID ${accountId}...`);
             
-            await apiClient.assignProxyToAccount(accountId, proxyId);
+            const result = await apiClient.assignProxyToAccount(accountId, proxyId);
             
-            this.log('success', '✅ Đã gán proxy thành công');
+            const proxyText = proxyId ? `Proxy #${proxyId}` : 'Không dùng proxy';
+            this.log('success', `✅ Đã gán ${proxyText} thành công`);
             
             // Close modal
-            document.getElementById('assignProxyModal').remove();
+            const modal = document.getElementById('assignProxyModal');
+            if (modal) {
+                modal.remove();
+            }
             
-            // Reload accounts
+            // Reload accounts to show updated proxy
             await this.loadAccountsFromBackend();
             
         } catch (error) {
@@ -1080,7 +1084,10 @@ const BiAds = {
     // Log to activity log
     log: function(level, message) {
         const log = document.getElementById('activityLog');
-        if (!log) return;
+        if (!log) {
+            console.log(`[${level.toUpperCase()}] ${message}`);
+            return;
+        }
         
         const line = document.createElement('div');
         line.className = 'console-line';
@@ -1092,14 +1099,27 @@ const BiAds = {
             'warning': '[CẢNH BÁO]'
         };
         
+        const levelClass = {
+            'info': 'info',
+            'success': 'success',
+            'error': 'error',
+            'warning': 'warning'
+        };
+        
         line.innerHTML = `
             <span class="console-timestamp">${new Date().toLocaleTimeString('vi-VN')}</span>
-            <span class="console-level ${level}">${levelText[level]}</span>
+            <span class="console-level ${levelClass[level]}">${levelText[level]}</span>
             <span class="console-message">${message}</span>
         `;
         
         log.appendChild(line);
         log.scrollTop = log.scrollHeight;
+        
+        // Limit log lines to 100
+        const lines = log.querySelectorAll('.console-line');
+        if (lines.length > 100) {
+            lines[0].remove();
+        }
     },
 
     // Clear log

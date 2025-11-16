@@ -223,9 +223,11 @@ const apiClient = {
     },
 
     async assignProxyToAccount(accountId, proxyId) {
-        return await this.request(`/api/accounts/${accountId}/assign-proxy`, {
-            method: 'PUT',
-            body: JSON.stringify({ proxy_id: proxyId })
+        const url = proxyId 
+            ? `/api/accounts/${accountId}/assign-proxy?proxy_id=${proxyId}`
+            : `/api/accounts/${accountId}/assign-proxy`;
+        return await this.request(url, {
+            method: 'PUT'
         });
     },
 

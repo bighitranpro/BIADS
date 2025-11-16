@@ -14,6 +14,10 @@ import uvicorn
 from datetime import datetime
 from contextlib import asynccontextmanager
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Import database and CRUD
 from core.database import get_db, init_db, Account as DBAccount, Proxy as DBProxy
