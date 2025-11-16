@@ -95,3 +95,29 @@ dist/
 *.swp
 *~.nib
 *.old
+
+# Documentation (keep only README.md and LICENSE)
+/*_COMPLETE.md
+/*_REPORT.md
+/*_SUMMARY.md
+/*_GUIDE.md
+/*_CHECK.md
+/*_ANALYSIS.md
+/*_MAP.txt
+/*_CONFIGURATION.md
+/*_DEPLOYMENT.md
+/*_CHANGELOG.md
+HUONG_DAN_*.md
+QUICK_START_*.md
+
+# Backups (keep only latest)
+backups/database/*.db.gz
+!backups/database/*_latest.db.gz
+
+# Build artifacts
+webapp-dist/
+dist/
+build/
+
+# Test files in root (keep organized in tests/)
+TEST_*.html
