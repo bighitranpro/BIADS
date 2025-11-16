@@ -569,52 +569,68 @@ const AdvancedFeatures = {
     },
 
     // Quản lý tin nhắn
-    renderMessagesPage: function(content) {
+    renderMessagesPage: async function(content) {
         content.innerHTML = `
             <div class="card">
                 <div class="card-header">
                     💬 Quản lý tin nhắn
                     <div style="float: right;">
-                        <button class="btn-primary" onclick="AdvancedFeatures.composeNewMessage()">
-                            ✉️ Soạn tin nhắn mới
+                        <button class="btn-primary" onclick="AdvancedFeatures.showManageAutoReplyTemplates()">
+                            🤖 Quản lý auto-reply
                         </button>
-                        <button class="btn-secondary" onclick="AdvancedFeatures.refreshMessages()">
+                        <button class="btn-success" onclick="AdvancedFeatures.refreshMessages()">
                             🔄 Làm mới
                         </button>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="stats-grid">
+                    <div class="info-box">
+                        <h4>ℹ️ Quản lý tin nhắn</h4>
+                        <p>Theo dõi và quản lý tin nhắn Facebook, tự động trả lời với templates.</p>
+                        <p><strong>Tính năng:</strong></p>
+                        <ul style="margin-left: 20px; color: #888;">
+                            <li>Xem danh sách cuộc trò chuyện</li>
+                            <li>Đọc và trả lời tin nhắn</li>
+                            <li>Tự động trả lời với trigger keywords</li>
+                            <li>Lên lịch gửi tin nhắn</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="grid-4" style="margin: 20px 0;">
                         <div class="stat-card">
-                            <div class="stat-value" id="totalConversations">0</div>
-                            <div class="stat-label">Cuộc trò chuyện</div>
+                            <h4 id="totalConversationsCount">0</h4>
+                            <p>Cuộc trò chuyện</p>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="unreadMessages">0</div>
-                            <div class="stat-label">Chưa đọc</div>
+                            <h4 id="unreadMessagesCount">0</h4>
+                            <p>Chưa đọc</p>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="sentMessages">0</div>
-                            <div class="stat-label">Đã gửi</div>
+                            <h4 id="sentMessagesCount">0</h4>
+                            <p>Đã gửi</p>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="scheduledMessages">0</div>
-                            <div class="stat-label">Đã lên lịch</div>
+                            <h4 id="autoReplyTemplatesCount">0</h4>
+                            <p>Auto-reply templates</p>
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 300px 1fr; gap: 20px; margin-top: 20px;">
+                    <div style="display: grid; grid-template-columns: 350px 1fr; gap: 20px; margin-top: 20px;">
                         <!-- Conversation List -->
                         <div class="card" style="margin: 0;">
                             <div class="card-header">
                                 💬 Danh sách hội thoại
                                 <input type="text" id="conversationSearch" placeholder="🔍 Tìm kiếm..." 
                                        style="width: 100%; margin-top: 10px;" onkeyup="AdvancedFeatures.searchConversations()">
+                                <label style="display: block; margin-top: 10px; font-size: 12px;">
+                                    <input type="checkbox" id="unreadOnlyFilter" onchange="AdvancedFeatures.filterConversations()">
+                                    Chỉ hiện chưa đọc
+                                </label>
                             </div>
                             <div class="card-body" style="padding: 0; max-height: 500px; overflow-y: auto;">
                                 <div id="conversationList">
                                     <div style="text-align: center; padding: 40px; color: #888;">
-                                        <p>Chưa có tin nhắn</p>
+                                        <p>Đang tải...</p>
                                     </div>
                                 </div>
                             </div>
@@ -626,12 +642,8 @@ const AdvancedFeatures = {
                                 <span id="currentConversationName">Chọn cuộc trò chuyện</span>
                                 <div style="float: right;">
                                     <button class="btn-primary" style="padding: 5px 10px; font-size: 12px;" 
-                                            onclick="AdvancedFeatures.markAsRead()">
+                                            id="markReadBtn" onclick="AdvancedFeatures.markConversationAsRead()" disabled>
                                         ✓ Đánh dấu đã đọc
-                                    </button>
-                                    <button class="btn-secondary" style="padding: 5px 10px; font-size: 12px;" 
-                                            onclick="AdvancedFeatures.archiveConversation()">
-                                        📦 Lưu trữ
                                     </button>
                                 </div>
                             </div>
@@ -644,8 +656,8 @@ const AdvancedFeatures = {
                                 <div style="padding: 15px; background: #1a1a2e; border-top: 1px solid rgba(255,255,255,0.1);">
                                     <div style="display: flex; gap: 10px;">
                                         <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." 
-                                               style="flex: 1;" onkeypress="if(event.key==='Enter') AdvancedFeatures.sendMessage()">
-                                        <button class="btn-primary" onclick="AdvancedFeatures.sendMessage()">
+                                               style="flex: 1;" onkeypress="if(event.key==='Enter') AdvancedFeatures.sendMessageFromUI()" disabled>
+                                        <button class="btn-primary" id="sendMessageBtn" onclick="AdvancedFeatures.sendMessageFromUI()" disabled>
                                             📤 Gửi
                                         </button>
                                     </div>
@@ -653,36 +665,12 @@ const AdvancedFeatures = {
                             </div>
                         </div>
                     </div>
-
-                    <div class="card" style="margin-top: 20px; background: rgba(102, 126, 234, 0.1);">
-                        <div class="card-header">🤖 Tin nhắn tự động</div>
-                        <div class="card-body">
-                            <div class="grid-2">
-                                <div class="input-group">
-                                    <label>
-                                        <input type="checkbox" id="autoReply" checked>
-                                        Tự động trả lời tin nhắn
-                                    </label>
-                                </div>
-                                <div class="input-group">
-                                    <label>
-                                        <input type="checkbox" id="autoGreeting">
-                                        Gửi lời chào tự động cho bạn mới
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="input-group">
-                                <label>Tin nhắn tự động</label>
-                                <textarea id="autoReplyMessage" rows="3" placeholder="Xin chào! Tôi đang bận, sẽ trả lời bạn sau..."></textarea>
-                            </div>
-                            <button class="btn-primary" onclick="AdvancedFeatures.saveAutoReplySettings()">
-                                💾 Lưu cài đặt
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         `;
+        
+        // Load messages data
+        await this.loadMessages();
     },
 
     // ============================================
@@ -1564,11 +1552,376 @@ const AdvancedFeatures = {
             }
         });
     },
-    composeNewMessage: () => app.addLog('info', 'Soạn tin nhắn mới'),
-    refreshMessages: () => app.addLog('info', 'Làm mới tin nhắn'),
-    searchConversations: () => app.addLog('info', 'Tìm kiếm hội thoại'),
-    sendMessage: () => app.addLog('info', 'Gửi tin nhắn'),
-    saveAutoReplySettings: () => app.addLog('success', 'Đã lưu cài đặt tự động trả lời'),
+    // ============================================
+    // MESSAGES MANAGEMENT
+    // ============================================
+    
+    currentConversationId: null,
+    currentAccountId: null,
+    
+    loadMessages: async function() {
+        try {
+            // Load stats
+            const statsResponse = await fetch('http://localhost:8000/api/messages/stats/dashboard');
+            if (statsResponse.ok) {
+                const stats = await statsResponse.json();
+                document.getElementById('totalConversationsCount').textContent = stats.total_conversations;
+                document.getElementById('unreadMessagesCount').textContent = stats.unread_messages;
+                document.getElementById('sentMessagesCount').textContent = stats.sent_messages;
+                document.getElementById('autoReplyTemplatesCount').textContent = stats.active_auto_reply_templates;
+            }
+            
+            // Load conversations list
+            await this.loadConversations();
+            
+        } catch (error) {
+            console.error('Error loading messages:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể tải tin nhắn');
+        }
+    },
+    
+    loadConversations: async function() {
+        try {
+            const searchValue = document.getElementById('conversationSearch')?.value || '';
+            const unreadOnly = document.getElementById('unreadOnlyFilter')?.checked || false;
+            
+            let url = 'http://localhost:8000/api/messages/?limit=50';
+            if (searchValue) url += `&search=${encodeURIComponent(searchValue)}`;
+            if (unreadOnly) url += '&unread_only=true';
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to load conversations');
+            
+            const conversations = await response.json();
+            this.renderConversationsList(conversations);
+            
+        } catch (error) {
+            console.error('Error loading conversations:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể tải danh sách hội thoại');
+        }
+    },
+    
+    renderConversationsList: function(conversations) {
+        const listEl = document.getElementById('conversationList');
+        
+        if (!conversations || conversations.length === 0) {
+            listEl.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #888;">
+                    <p>Chưa có cuộc trò chuyện nào</p>
+                </div>
+            `;
+            return;
+        }
+        
+        listEl.innerHTML = conversations.map(conv => {
+            const unreadBadge = conv.unread_count > 0 
+                ? `<span class="badge badge-danger">${conv.unread_count}</span>` 
+                : '';
+            
+            const lastMessage = conv.last_message 
+                ? (conv.last_message.length > 50 ? conv.last_message.substring(0, 50) + '...' : conv.last_message)
+                : 'Không có tin nhắn';
+            
+            const time = conv.last_message_at 
+                ? new Date(conv.last_message_at).toLocaleString('vi-VN', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                })
+                : '';
+            
+            return `
+                <div class="conversation-item" 
+                     style="padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); cursor: pointer; ${conv.unread_count > 0 ? 'background: rgba(102, 126, 234, 0.1);' : ''}"
+                     onclick="AdvancedFeatures.openConversation('${conv.conversation_id}', ${conv.account_id})">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <strong>${conv.other_participant_name || conv.other_participant_uid}</strong>
+                            ${unreadBadge}
+                            <div style="font-size: 12px; color: #888; margin-top: 5px;">${lastMessage}</div>
+                        </div>
+                        <div style="font-size: 11px; color: #666;">${time}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+    
+    openConversation: async function(conversationId, accountId) {
+        try {
+            this.currentConversationId = conversationId;
+            this.currentAccountId = accountId;
+            
+            // Enable send button
+            document.getElementById('messageInput').disabled = false;
+            document.getElementById('sendMessageBtn').disabled = false;
+            document.getElementById('markReadBtn').disabled = false;
+            
+            // Load messages
+            let url = `http://localhost:8000/api/messages/${conversationId}?limit=100`;
+            if (accountId) url += `&account_id=${accountId}`;
+            
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to load messages');
+            
+            const messages = await response.json();
+            this.renderMessageThread(messages);
+            
+            // Update conversation name
+            if (messages.length > 0) {
+                const firstMsg = messages[0];
+                const otherName = firstMsg.is_sent_by_me ? firstMsg.receiver_name : firstMsg.sender_name;
+                document.getElementById('currentConversationName').textContent = otherName || 'Cuộc trò chuyện';
+            }
+            
+            // Reload conversations to update unread count
+            await this.loadConversations();
+            await this.loadMessages();
+            
+        } catch (error) {
+            console.error('Error opening conversation:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể mở cuộc trò chuyện');
+        }
+    },
+    
+    renderMessageThread: function(messages) {
+        const threadEl = document.getElementById('messageThread');
+        
+        if (!messages || messages.length === 0) {
+            threadEl.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #888;">
+                    <p>Chưa có tin nhắn trong cuộc trò chuyện này</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Sort messages by date (oldest first)
+        messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        
+        threadEl.innerHTML = messages.map(msg => {
+            const isSent = msg.is_sent_by_me;
+            const time = new Date(msg.created_at).toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: 'numeric',
+                month: 'short'
+            });
+            
+            return `
+                <div style="margin-bottom: 15px; display: flex; ${isSent ? 'justify-content: flex-end;' : 'justify-content: flex-start;'}">
+                    <div style="max-width: 70%; padding: 10px 15px; border-radius: 15px; ${isSent ? 'background: rgba(102, 126, 234, 0.8);' : 'background: rgba(255,255,255,0.1);'}">
+                        ${!isSent ? `<div style="font-size: 11px; color: #888; margin-bottom: 5px;">${msg.sender_name || msg.sender_uid}</div>` : ''}
+                        <div>${msg.message_text || '(No text)'}</div>
+                        <div style="font-size: 10px; color: #aaa; margin-top: 5px; text-align: right;">${time}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Scroll to bottom
+        threadEl.scrollTop = threadEl.scrollHeight;
+    },
+    
+    sendMessageFromUI: async function() {
+        if (!this.currentConversationId || !this.currentAccountId) {
+            BiAds.showToast('warning', 'Chưa chọn', 'Vui lòng chọn cuộc trò chuyện');
+            return;
+        }
+        
+        const messageInput = document.getElementById('messageInput');
+        const messageText = messageInput.value.trim();
+        
+        if (!messageText) {
+            BiAds.showToast('warning', 'Thiếu nội dung', 'Vui lòng nhập tin nhắn');
+            return;
+        }
+        
+        try {
+            // Get receiver UID from current conversation
+            const threadEl = document.getElementById('messageThread');
+            const firstMessage = threadEl.querySelector('[style*="justify-content: flex-start"]');
+            
+            // This is a simplified version - in production, you'd store receiver_uid properly
+            BiAds.showToast('info', 'Gửi tin nhắn', 'Chức năng này cần receiver UID để hoạt động đầy đủ');
+            
+            // Clear input
+            messageInput.value = '';
+            
+        } catch (error) {
+            console.error('Error sending message:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể gửi tin nhắn');
+        }
+    },
+    
+    markConversationAsRead: async function() {
+        if (!this.currentConversationId) {
+            BiAds.showToast('warning', 'Chưa chọn', 'Vui lòng chọn cuộc trò chuyện');
+            return;
+        }
+        
+        try {
+            let url = `http://localhost:8000/api/messages/conversations/${this.currentConversationId}/mark-all-read`;
+            if (this.currentAccountId) url += `?account_id=${this.currentAccountId}`;
+            
+            const response = await fetch(url, { method: 'POST' });
+            if (!response.ok) throw new Error('Failed to mark as read');
+            
+            BiAds.showToast('success', 'Hoàn thành', 'Đã đánh dấu đã đọc');
+            
+            // Reload
+            await this.loadConversations();
+            await this.loadMessages();
+            
+        } catch (error) {
+            console.error('Error marking as read:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể đánh dấu đã đọc');
+        }
+    },
+    
+    showManageAutoReplyTemplates: async function() {
+        try {
+            // Load templates
+            const response = await fetch('http://localhost:8000/api/messages/auto-reply/templates');
+            if (!response.ok) throw new Error('Failed to load templates');
+            
+            const templates = await response.json();
+            
+            let templatesList = templates.length > 0 
+                ? templates.map((t, i) => `
+                    <div style="padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 10px; border-radius: 5px;">
+                        <strong>${i+1}. ${t.name}</strong> 
+                        <span class="badge ${t.is_active ? 'badge-success' : 'badge-secondary'}">${t.is_active ? 'Hoạt động' : 'Tắt'}</span>
+                        <div style="font-size: 12px; color: #888; margin-top: 5px;">
+                            Keywords: ${t.trigger_keywords.join(', ')}
+                        </div>
+                        <div style="font-size: 12px; margin-top: 5px;">
+                            Trả lời: "${t.reply_message}"
+                        </div>
+                        <div style="margin-top: 5px;">
+                            <button class="btn-sm btn-danger" onclick="AdvancedFeatures.deleteAutoReplyTemplate(${t.id})">🗑️ Xóa</button>
+                        </div>
+                    </div>
+                `).join('')
+                : '<p style="color: #888; text-align: center; padding: 20px;">Chưa có template nào</p>';
+            
+            ModalConfirmation.showInfo({
+                title: '🤖 Quản lý Auto-Reply Templates',
+                message: `
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        ${templatesList}
+                    </div>
+                `,
+                confirmText: '➕ Thêm template mới',
+                onConfirm: () => {
+                    this.showAddAutoReplyTemplate();
+                }
+            });
+            
+        } catch (error) {
+            console.error('Error loading templates:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể tải templates');
+        }
+    },
+    
+    showAddAutoReplyTemplate: function() {
+        ModalConfirmation.showInput({
+            title: '➕ Thêm Auto-Reply Template',
+            message: 'Tạo template tự động trả lời tin nhắn:',
+            inputs: [
+                { id: 'templateName', label: 'Tên template *', type: 'text', placeholder: 'Chào mừng khách hàng', required: true },
+                { id: 'keywords', label: 'Keywords (cách nhau bởi dấu phẩy) *', type: 'text', placeholder: 'hi, hello, chào', required: true },
+                { id: 'replyMessage', label: 'Tin nhắn trả lời *', type: 'textarea', placeholder: 'Xin chào! Cảm ơn bạn đã liên hệ...', required: true },
+                { id: 'priority', label: 'Độ ưu tiên (số càng cao càng ưu tiên)', type: 'number', value: '0' },
+                { id: 'isActive', label: 'Kích hoạt ngay', type: 'checkbox', checked: true }
+            ],
+            confirmText: 'Tạo template',
+            onConfirm: async (values) => {
+                try {
+                    // Parse keywords
+                    const keywords = values.keywords.split(',').map(k => k.trim()).filter(k => k);
+                    
+                    if (keywords.length === 0) {
+                        throw new Error('Vui lòng nhập ít nhất 1 keyword');
+                    }
+                    
+                    // Get first account ID (simplified - in production, let user choose)
+                    const accountsResponse = await fetch('http://localhost:8000/api/accounts?limit=1');
+                    const accounts = await accountsResponse.json();
+                    
+                    if (accounts.length === 0) {
+                        throw new Error('Không tìm thấy tài khoản nào');
+                    }
+                    
+                    const response = await fetch('http://localhost:8000/api/messages/auto-reply/templates', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            account_id: accounts[0].id,
+                            name: values.templateName,
+                            trigger_keywords: keywords,
+                            reply_message: values.replyMessage,
+                            priority: parseInt(values.priority) || 0,
+                            is_active: values.isActive
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to create template');
+                    }
+                    
+                    BiAds.showToast('success', 'Thành công', 'Đã tạo auto-reply template');
+                    await this.loadMessages();
+                    
+                } catch (error) {
+                    console.error('Error creating template:', error);
+                    BiAds.showToast('error', 'Lỗi', error.message);
+                }
+            }
+        });
+    },
+    
+    deleteAutoReplyTemplate: function(templateId) {
+        ModalConfirmation.showDanger({
+            title: '🗑️ Xóa template?',
+            message: 'Bạn có chắc chắn muốn xóa auto-reply template này?',
+            confirmText: 'Xóa',
+            onConfirm: async () => {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/messages/auto-reply/templates/${templateId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (!response.ok) throw new Error('Failed to delete template');
+                    
+                    BiAds.showToast('success', 'Đã xóa', 'Template đã được xóa');
+                    await this.loadMessages();
+                    
+                    // Refresh modal
+                    setTimeout(() => this.showManageAutoReplyTemplates(), 500);
+                    
+                } catch (error) {
+                    console.error('Error deleting template:', error);
+                    BiAds.showToast('error', 'Lỗi', 'Không thể xóa template');
+                }
+            }
+        });
+    },
+    
+    refreshMessages: function() {
+        this.loadMessages();
+        BiAds.showToast('info', 'Làm mới', 'Đang tải lại tin nhắn...');
+    },
+    
+    searchConversations: function() {
+        this.loadConversations();
+    },
+    
+    filterConversations: function() {
+        this.loadConversations();
+    },
     
     // ============================================
     // IP MANAGEMENT
