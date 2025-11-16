@@ -363,13 +363,17 @@ const BiAds = {
 
     // Load accounts from backend
     loadAccountsFromBackend: async function() {
+        const loadingToast = this.showLoading('Đang tải...', 'Đang tải danh sách tài khoản từ backend');
+        
         try {
             this.log('info', '🔄 Đang tải danh sách tài khoản từ backend...');
             
             const accounts = await apiClient.getAccounts();
             this.accounts = accounts;
             
+            this.hideToast(loadingToast);
             this.log('success', `✅ Đã tải ${accounts.length} tài khoản thành công`);
+            this.showToast('success', 'Tải tài khoản thành công', `Đã tải ${accounts.length} tài khoản từ backend`);
             
             // Re-render the table
             const tbody = document.getElementById('accountsTableBody');
@@ -416,7 +420,9 @@ const BiAds = {
             }
             
         } catch (error) {
+            this.hideToast(loadingToast);
             this.log('error', `❌ Lỗi tải tài khoản: ${error.message}`);
+            this.showToast('error', 'Lỗi tải tài khoản', error.message);
             
             const container = document.getElementById('accountsTableContainer');
             if (container) {
@@ -453,23 +459,43 @@ const BiAds = {
 
     // Check all accounts status
     checkAllAccountsStatus: async function() {
-        if (!confirm('Kiểm tra tất cả tài khoản? Quá trình này có thể mất vài phút.')) {
-            return;
-        }
+        // Show confirmation toast instead of blocking confirm dialog
+        const confirmToast = this.showToast('warning', 'Xác nhận kiểm tra tất cả?', 
+            'Quá trình này có thể mất vài phút. Bấm vào đây để xác nhận.', 0);
         
-        try {
-            this.log('info', '🔄 Đang kiểm tra tất cả tài khoản...');
+        // Make toast clickable for confirmation
+        confirmToast.style.cursor = 'pointer';
+        confirmToast.onclick = async () => {
+            this.hideToast(confirmToast);
             
-            const result = await apiClient.checkAccountsStatusBulk();
+            const loadingToast = this.showLoading('Đang kiểm tra...', 'Kiểm tra tất cả tài khoản, vui lòng đợi');
             
-            this.log('success', `✅ Hoàn thành: ${result.live_count} live, ${result.die_count} die`);
-            
-            // Reload accounts
-            await this.loadAccountsFromBackend();
-            
-        } catch (error) {
-            this.log('error', `❌ Lỗi: ${error.message}`);
-        }
+            try {
+                this.log('info', '🔄 Đang kiểm tra tất cả tài khoản...');
+                
+                const result = await apiClient.checkAccountsStatusBulk();
+                
+                this.hideToast(loadingToast);
+                this.log('success', `✅ Hoàn thành: ${result.live_count} live, ${result.die_count} die`);
+                this.showToast('success', 'Kiểm tra hoàn tất', 
+                    `${result.live_count} live, ${result.die_count} die`);
+                
+                // Reload accounts
+                await this.loadAccountsFromBackend();
+                
+            } catch (error) {
+                this.hideToast(loadingToast);
+                this.log('error', `❌ Lỗi: ${error.message}`);
+                this.showToast('error', 'Lỗi kiểm tra tài khoản', error.message);
+            }
+        };
+        
+        // Auto hide confirmation after 10 seconds
+        setTimeout(() => {
+            if (confirmToast.parentElement) {
+                this.hideToast(confirmToast);
+            }
+        }, 10000);
     },
 
     // Show assign proxy modal
@@ -546,34 +572,59 @@ const BiAds = {
 
     // Use account by ID
     useAccountById: async function(accountId) {
+        const loadingToast = this.showLoading('Đang chọn...', 'Đang chọn tài khoản');
+        
         try {
             const account = await apiClient.getAccountById(accountId);
             this.currentAccount = account;
             this.saveData();
+            
+            this.hideToast(loadingToast);
             this.log('success', `✅ Đang sử dụng tài khoản: ${account.name || account.uid}`);
+            this.showToast('success', 'Đã chọn tài khoản', 
+                `Đang sử dụng: ${account.name || account.uid}`);
             
             // Re-render page
             this.loadPage('accounts');
         } catch (error) {
+            this.hideToast(loadingToast);
             this.log('error', `❌ Lỗi: ${error.message}`);
+            this.showToast('error', 'Lỗi chọn tài khoản', error.message);
         }
     },
 
     // Delete account by ID
     deleteAccountById: async function(accountId) {
-        if (!confirm('Bạn có chắc muốn xóa tài khoản này?')) {
-            return;
-        }
+        // Show confirmation toast
+        const confirmToast = this.showToast('warning', 'Xác nhận xóa tài khoản?', 
+            'Bấm vào đây để xác nhận xóa. Hành động này không thể hoàn tác!', 0);
         
-        try {
-            await apiClient.deleteAccount(accountId);
-            this.log('success', '✅ Đã xóa tài khoản');
+        confirmToast.style.cursor = 'pointer';
+        confirmToast.onclick = async () => {
+            this.hideToast(confirmToast);
             
-            // Reload accounts
-            await this.loadAccountsFromBackend();
-        } catch (error) {
-            this.log('error', `❌ Lỗi: ${error.message}`);
-        }
+            const loadingToast = this.showLoading('Đang xóa...', 'Đang xóa tài khoản');
+            
+            try {
+                await apiClient.deleteAccount(accountId);
+                this.hideToast(loadingToast);
+                this.log('success', '✅ Đã xóa tài khoản');
+                this.showToast('success', 'Đã xóa tài khoản', 'Tài khoản đã được xóa khỏi hệ thống');
+                
+                // Reload accounts
+                await this.loadAccountsFromBackend();
+            } catch (error) {
+                this.hideToast(loadingToast);
+                this.log('error', `❌ Lỗi: ${error.message}`);
+                this.showToast('error', 'Lỗi xóa tài khoản', error.message);
+            }
+        };
+        
+        setTimeout(() => {
+            if (confirmToast.parentElement) {
+                this.hideToast(confirmToast);
+            }
+        }, 10000);
     },
 
     // Show Add Account Modal
