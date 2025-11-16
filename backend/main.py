@@ -106,6 +106,8 @@ from api.proxy_bulk_api import router as proxy_bulk_router
 from api.sub_accounts_api import router as sub_accounts_router
 from api.facebook_ids_api import router as facebook_ids_router
 from api.posted_content_api import router as posted_content_router
+from api.device_ips_api import router as device_ips_router
+from api.whitelist_api import router as whitelist_router
 
 app.include_router(advanced_router)
 app.include_router(settings_router)
@@ -119,6 +121,8 @@ app.include_router(proxy_bulk_router)
 app.include_router(sub_accounts_router)
 app.include_router(facebook_ids_router)
 app.include_router(posted_content_router)
+app.include_router(device_ips_router)
+app.include_router(whitelist_router)
 
 # ============================================
 # PYDANTIC MODELS
