@@ -144,6 +144,48 @@
         background: #888;
         color: white;
     }
+    
+    /* Running task highlight animation */
+    .task-running-row {
+        animation: subtlePulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes subtlePulse {
+        0%, 100% {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        50% {
+            background: rgba(79, 172, 254, 0.1);
+        }
+    }
+    
+    .task-running-highlight {
+        animation: highlightPulse 1.5s ease-in-out 3;
+        border-left: 3px solid #00f2fe !important;
+    }
+    
+    @keyframes highlightPulse {
+        0%, 100% {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        50% {
+            background: rgba(0, 242, 254, 0.2);
+        }
+    }
+    
+    /* Progress bar animation for running tasks */
+    .task-status.processing {
+        animation: statusPulse 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes statusPulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.7;
+        }
+    }
 
     .task-actions {
         display: flex;
@@ -239,6 +281,155 @@
         font-size: 64px;
         margin-bottom: 20px;
     }
+    
+    /* Running Tasks Banner */
+    .running-tasks-banner {
+        background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+        border: 2px solid rgba(79, 172, 254, 0.3);
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        display: none;
+    }
+    
+    .running-tasks-banner.has-tasks {
+        display: block;
+        animation: slideIn 0.5s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .running-tasks-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        color: #00f2fe;
+        font-weight: 600;
+    }
+    
+    .running-tasks-header .icon {
+        font-size: 24px;
+        animation: spin 2s linear infinite;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .running-tasks-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 10px;
+    }
+    
+    .running-task-item {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 12px;
+        border-radius: 8px;
+        border-left: 3px solid #00f2fe;
+    }
+    
+    .running-task-name {
+        font-weight: 600;
+        color: #e0e0e0;
+        margin-bottom: 5px;
+    }
+    
+    .running-task-account {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 8px;
+    }
+    
+    .running-task-progress {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .running-task-progress .progress-bar {
+        flex: 1;
+        height: 6px;
+    }
+    
+    .running-task-progress .progress-text {
+        font-size: 12px;
+        color: #00f2fe;
+        font-weight: 600;
+    }
+    
+    /* Running task animations */
+    .task-running-row {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .task-running-highlight {
+        animation: taskPulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes taskPulse {
+        0%, 100% {
+            background-color: rgba(79, 172, 254, 0.05);
+        }
+        50% {
+            background-color: rgba(79, 172, 254, 0.15);
+        }
+    }
+    
+    .progress-bar {
+        position: relative;
+        overflow: visible;
+    }
+    
+    .task-running-row .progress-fill {
+        animation: progressShine 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes progressShine {
+        0% {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 50%, #4facfe 100%);
+        }
+        50% {
+            background: linear-gradient(90deg, #00f2fe 0%, #4facfe 50%, #00f2fe 100%);
+        }
+        100% {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 50%, #4facfe 100%);
+        }
+    }
+    
+    /* Realtime indicator */
+    .realtime-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #43e97b;
+        border-radius: 50%;
+        margin-left: 8px;
+        animation: realtimePulse 1s ease-in-out infinite;
+    }
+    
+    @keyframes realtimePulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.5;
+            transform: scale(1.2);
+        }
+    }
 </style>
 
 <div class="task-history-container">
@@ -263,6 +454,17 @@
         <div class="stat-card failed">
             <div class="stat-number" id="statFailed">0</div>
             <div class="stat-label">Thất bại</div>
+        </div>
+    </div>
+    
+    <!-- Running Tasks Banner -->
+    <div class="running-tasks-banner" id="runningTasksBanner">
+        <div class="running-tasks-header">
+            <span class="icon">⚙️</span>
+            <span>Đang chạy: <span id="runningTaskCount">0</span> tác vụ</span>
+        </div>
+        <div class="running-tasks-list" id="runningTasksList">
+            <!-- Running tasks will be rendered here -->
         </div>
     </div>
 
@@ -341,6 +543,8 @@
     const taskHistory = {
         tasks: [],
         chromeSessions: [],
+        runningTasks: [],
+        lastCompletedTasks: [],
 
         async init() {
             await this.loadStats();
@@ -352,6 +556,74 @@
                 this.loadStats();
                 this.loadChromeSessions();
             }, 5000);
+            
+            // Poll running tasks every 3 seconds for realtime updates
+            setInterval(() => {
+                this.pollRunningTasks();
+            }, 3000);
+            
+            // Initial poll
+            this.pollRunningTasks();
+        },
+        
+        async pollRunningTasks() {
+            try {
+                const response = await fetch('http://localhost:8000/api/task/running');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const newRunningTasks = data.running_tasks;
+                    
+                    // Check for newly completed tasks
+                    this.runningTasks.forEach(oldTask => {
+                        const stillRunning = newRunningTasks.find(t => t.task_id === oldTask.task_id);
+                        if (!stillRunning && !this.lastCompletedTasks.includes(oldTask.task_id)) {
+                            // Task completed!
+                            this.lastCompletedTasks.push(oldTask.task_id);
+                            this.notifyTaskComplete(oldTask);
+                        }
+                    });
+                    
+                    // Update running tasks
+                    this.runningTasks = newRunningTasks;
+                    
+                    // Update progress for running tasks in table
+                    this.updateRunningTasksInTable();
+                }
+            } catch (error) {
+                console.error('Error polling running tasks:', error);
+            }
+        },
+        
+        updateRunningTasksInTable() {
+            // Update progress bars for running tasks
+            this.runningTasks.forEach(runningTask => {
+                const row = document.querySelector(`tr[data-task-id="${runningTask.task_id}"]`);
+                if (row) {
+                    // Update progress bar
+                    const progressFill = row.querySelector('.progress-fill');
+                    const progressText = row.querySelector('.progress-text');
+                    if (progressFill) {
+                        progressFill.style.width = `${runningTask.progress}%`;
+                    }
+                    if (progressText) {
+                        progressText.textContent = `${runningTask.progress}%`;
+                    }
+                    
+                    // Add pulsing animation
+                    row.classList.add('task-running-highlight');
+                }
+            });
+        },
+        
+        notifyTaskComplete(task) {
+            BiAds.showToast('success', 'Task hoàn thành', 
+                `${task.task_name} đã hoàn thành cho tài khoản ${task.account?.name || task.account?.uid}`);
+            
+            // Reload tasks to show updated status
+            setTimeout(() => {
+                this.loadTasks();
+            }, 1000);
         },
 
         async loadStats() {
@@ -411,7 +683,7 @@
             }
 
             tbody.innerHTML = this.tasks.map((task, index) => `
-                <tr>
+                <tr data-task-id="${task.task_id}" class="${task.status === 'processing' || task.status === 'pending' ? 'task-running-row' : ''}">
                     <td>${index + 1}</td>
                     <td><code>${task.task_id.substring(0, 8)}...</code></td>
                     <td>
@@ -424,7 +696,7 @@
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: ${task.progress}%"></div>
                         </div>
-                        <small>${task.progress}%</small>
+                        <small class="progress-text">${task.progress}%</small>
                     </td>
                     <td>
                         <small>${new Date(task.created_at).toLocaleString('vi-VN')}</small>

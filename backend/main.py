@@ -102,6 +102,7 @@ from api.account_interactions_api import router as interactions_router
 from api.account_checker_api import router as account_checker_router
 from api.activity_api import router as activity_router
 from api.task_status_api import router as task_status_router
+from api.proxy_bulk_api import router as proxy_bulk_router
 
 app.include_router(advanced_router)
 app.include_router(settings_router)
@@ -111,6 +112,7 @@ app.include_router(task_manager_router)
 app.include_router(account_checker_router)
 app.include_router(activity_router)
 app.include_router(task_status_router)
+app.include_router(proxy_bulk_router)
 
 # ============================================
 # PYDANTIC MODELS
