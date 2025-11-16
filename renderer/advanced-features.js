@@ -3,7 +3,7 @@
 
 const AdvancedFeatures = {
     // Quản lý tài khoản phụ
-    renderSubAccountsPage: function(content) {
+    renderSubAccountsPage: async function(content) {
         content.innerHTML = `
             <div class="card">
                 <div class="card-header">
@@ -78,6 +78,9 @@ const AdvancedFeatures = {
                 </div>
             </div>
         `;
+        
+        // Load sub accounts data
+        await this.loadSubAccounts();
     },
 
     // Quản lý ID
@@ -675,9 +678,375 @@ const AdvancedFeatures = {
         `;
     },
 
+    // ============================================
+    // SUB ACCOUNTS IMPLEMENTATION
+    // ============================================
+    
+    subAccounts: [],
+    subAccountsStats: null,
+    
+    async loadSubAccounts() {
+        try {
+            const response = await fetch('http://localhost:8000/api/sub-accounts/');
+            const data = await response.json();
+            this.subAccounts = data;
+            
+            // Update table
+            const tbody = document.getElementById('subAccountsTableBody');
+            if (!tbody) return;
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #888;">
+                            <p>Chưa có tài khoản phụ nào</p>
+                            <p>Nhấn "➕ Thêm tài khoản phụ" để bắt đầu</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = data.map((sub, index) => {
+                const statusBadge = sub.status === 'active' 
+                    ? '<span class="badge-success">Active</span>' 
+                    : sub.status === 'inactive'
+                    ? '<span class="badge-warning">Inactive</span>'
+                    : '<span class="badge-danger">Banned</span>';
+                
+                const mainAccInfo = sub.main_account_info 
+                    ? `${sub.main_account_info.name || sub.main_account_info.uid}`
+                    : 'N/A';
+                
+                return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${sub.uid}</td>
+                        <td>${sub.name || 'N/A'}</td>
+                        <td>${mainAccInfo}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn-sm btn-primary" onclick="AdvancedFeatures.editSubAccount(${sub.id})" title="Chỉnh sửa">
+                                ✏️
+                            </button>
+                            <button class="btn-sm btn-danger" onclick="AdvancedFeatures.deleteSubAccount(${sub.id})" title="Xóa">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            // Load stats
+            await this.loadSubAccountsStats();
+            
+        } catch (error) {
+            console.error('Error loading sub accounts:', error);
+            app.addLog('error', `Lỗi tải tài khoản phụ: ${error.message}`);
+        }
+    },
+    
+    async loadSubAccountsStats() {
+        try {
+            const response = await fetch('http://localhost:8000/api/sub-accounts/stats');
+            const stats = await response.json();
+            this.subAccountsStats = stats;
+            
+            // Update UI if stats display exists
+            // Can add stats display in the UI later
+            console.log('Sub Accounts Stats:', stats);
+            
+        } catch (error) {
+            console.error('Error loading sub accounts stats:', error);
+        }
+    },
+    
+    async showAddSubAccountModal() {
+        // Get list of main accounts
+        try {
+            const response = await fetch('http://localhost:8000/api/accounts?limit=1000');
+            const accounts = await response.json();
+            
+            if (accounts.length === 0) {
+                app.addLog('warning', 'Vui lòng thêm tài khoản chính trước');
+                return;
+            }
+            
+            const accountOptions = accounts.map(acc => 
+                `<option value="${acc.id}">${acc.name || acc.username || acc.uid}</option>`
+            ).join('');
+            
+            ModalConfirmation.showInput({
+                title: '➕ Thêm tài khoản phụ',
+                html: `
+                    <div class="input-group">
+                        <label>Tài khoản chính</label>
+                        <select id="modalMainAccountId" style="width: 100%; padding: 8px; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: white;">
+                            ${accountOptions}
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Facebook UID (bắt buộc)</label>
+                        <input type="text" id="modalSubUid" placeholder="100012345678" style="width: 100%;">
+                    </div>
+                    <div class="input-group">
+                        <label>Tên hiển thị</label>
+                        <input type="text" id="modalSubName" placeholder="Nguyễn Văn A" style="width: 100%;">
+                    </div>
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input type="text" id="modalSubUsername" placeholder="nguyenvana" style="width: 100%;">
+                    </div>
+                    <div class="input-group">
+                        <label>
+                            <input type="checkbox" id="modalAutoLike" checked>
+                            Tự động like bài viết
+                        </label>
+                    </div>
+                    <div class="input-group">
+                        <label>
+                            <input type="checkbox" id="modalAutoComment">
+                            Tự động comment
+                        </label>
+                    </div>
+                `,
+                confirmText: 'Tạo',
+                onConfirm: async () => {
+                    const mainAccountId = document.getElementById('modalMainAccountId').value;
+                    const uid = document.getElementById('modalSubUid').value.trim();
+                    const name = document.getElementById('modalSubName').value.trim();
+                    const username = document.getElementById('modalSubUsername').value.trim();
+                    const autoLike = document.getElementById('modalAutoLike').checked;
+                    const autoComment = document.getElementById('modalAutoComment').checked;
+                    
+                    if (!uid) {
+                        app.addLog('warning', 'Vui lòng nhập UID');
+                        return;
+                    }
+                    
+                    await this.createSubAccount({
+                        main_account_id: parseInt(mainAccountId),
+                        uid: uid,
+                        name: name || null,
+                        username: username || null,
+                        auto_like: autoLike,
+                        auto_comment: autoComment,
+                        status: 'active'
+                    });
+                }
+            });
+            
+        } catch (error) {
+            app.addLog('error', `Lỗi: ${error.message}`);
+        }
+    },
+    
+    async createSubAccount(data) {
+        try {
+            const response = await fetch('http://localhost:8000/api/sub-accounts/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                app.addLog('success', result.message);
+                await this.loadSubAccounts();
+            } else {
+                app.addLog('error', result.detail || 'Lỗi tạo sub account');
+            }
+            
+        } catch (error) {
+            app.addLog('error', `Lỗi tạo sub account: ${error.message}`);
+        }
+    },
+    
+    async editSubAccount(subAccountId) {
+        try {
+            // Get current sub account data
+            const response = await fetch(`http://localhost:8000/api/sub-accounts/${subAccountId}`);
+            const subAcc = await response.json();
+            
+            ModalConfirmation.showInput({
+                title: '✏️ Chỉnh sửa tài khoản phụ',
+                html: `
+                    <div class="input-group">
+                        <label>UID: ${subAcc.uid}</label>
+                    </div>
+                    <div class="input-group">
+                        <label>Tên hiển thị</label>
+                        <input type="text" id="modalEditName" value="${subAcc.name || ''}" style="width: 100%;">
+                    </div>
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input type="text" id="modalEditUsername" value="${subAcc.username || ''}" style="width: 100%;">
+                    </div>
+                    <div class="input-group">
+                        <label>Trạng thái</label>
+                        <select id="modalEditStatus" style="width: 100%; padding: 8px; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; color: white;">
+                            <option value="active" ${subAcc.status === 'active' ? 'selected' : ''}>Active</option>
+                            <option value="inactive" ${subAcc.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                            <option value="banned" ${subAcc.status === 'banned' ? 'selected' : ''}>Banned</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>
+                            <input type="checkbox" id="modalEditAutoLike" ${subAcc.auto_like ? 'checked' : ''}>
+                            Tự động like
+                        </label>
+                    </div>
+                    <div class="input-group">
+                        <label>
+                            <input type="checkbox" id="modalEditAutoComment" ${subAcc.auto_comment ? 'checked' : ''}>
+                            Tự động comment
+                        </label>
+                    </div>
+                    <div class="input-group">
+                        <label>
+                            <input type="checkbox" id="modalEditAutoShare" ${subAcc.auto_share ? 'checked' : ''}>
+                            Tự động share
+                        </label>
+                    </div>
+                `,
+                confirmText: 'Cập nhật',
+                onConfirm: async () => {
+                    const updateData = {
+                        name: document.getElementById('modalEditName').value.trim() || null,
+                        username: document.getElementById('modalEditUsername').value.trim() || null,
+                        status: document.getElementById('modalEditStatus').value,
+                        auto_like: document.getElementById('modalEditAutoLike').checked,
+                        auto_comment: document.getElementById('modalEditAutoComment').checked,
+                        auto_share: document.getElementById('modalEditAutoShare').checked
+                    };
+                    
+                    await this.updateSubAccount(subAccountId, updateData);
+                }
+            });
+            
+        } catch (error) {
+            app.addLog('error', `Lỗi: ${error.message}`);
+        }
+    },
+    
+    async updateSubAccount(subAccountId, data) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/sub-accounts/${subAccountId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                app.addLog('success', result.message);
+                await this.loadSubAccounts();
+            } else {
+                app.addLog('error', result.detail || 'Lỗi cập nhật sub account');
+            }
+            
+        } catch (error) {
+            app.addLog('error', `Lỗi cập nhật sub account: ${error.message}`);
+        }
+    },
+    
+    async deleteSubAccount(subAccountId) {
+        ModalConfirmation.showDanger({
+            title: '🗑️ Xóa tài khoản phụ?',
+            message: 'Bạn có chắc chắn muốn xóa tài khoản phụ này?',
+            details: 'Hành động này không thể hoàn tác.',
+            confirmText: 'Xóa ngay',
+            onConfirm: async () => {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/sub-accounts/${subAccountId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        app.addLog('success', result.message);
+                        await this.loadSubAccounts();
+                    } else {
+                        app.addLog('error', result.detail || 'Lỗi xóa sub account');
+                    }
+                    
+                } catch (error) {
+                    app.addLog('error', `Lỗi xóa sub account: ${error.message}`);
+                }
+            }
+        });
+    },
+    
+    async importSubAccounts() {
+        ModalConfirmation.showInput({
+            title: '📥 Import tài khoản phụ',
+            html: `
+                <div class="info-box" style="margin-bottom: 15px;">
+                    <p><strong>Format file:</strong></p>
+                    <p style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px;">
+                        main_account_uid|sub_uid|name|username
+                    </p>
+                    <p><strong>Ví dụ:</strong></p>
+                    <p style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px;">
+                        100012345678|100087654321|Nguyen Van A|nguyenvana<br>
+                        100012345678|100087654322|Tran Thi B
+                    </p>
+                </div>
+                <div class="input-group">
+                    <label>Chọn file</label>
+                    <input type="file" id="modalImportFile" accept=".txt" style="width: 100%;">
+                </div>
+            `,
+            confirmText: 'Import',
+            onConfirm: async () => {
+                const fileInput = document.getElementById('modalImportFile');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    app.addLog('warning', 'Vui lòng chọn file');
+                    return;
+                }
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    app.addLog('info', 'Đang import...');
+                    
+                    const response = await fetch('http://localhost:8000/api/sub-accounts/bulk/import', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        app.addLog('success', result.message);
+                        if (result.errors && result.errors.length > 0) {
+                            console.log('Import errors:', result.errors);
+                        }
+                        await this.loadSubAccounts();
+                    } else {
+                        app.addLog('error', result.detail || 'Lỗi import');
+                    }
+                    
+                } catch (error) {
+                    app.addLog('error', `Lỗi import: ${error.message}`);
+                }
+            }
+        });
+    },
+    
     // Placeholder functions for actions
-    showAddSubAccountModal: () => app.addLog('info', 'Chức năng thêm tài khoản phụ'),
-    importSubAccounts: () => app.addLog('info', 'Import tài khoản phụ'),
+    // showAddSubAccountModal: () => app.addLog('info', 'Chức năng thêm tài khoản phụ'),
+    // importSubAccounts: () => app.addLog('info', 'Import tài khoản phụ'),
     addIDsManually: () => app.addLog('info', 'Thêm ID thủ công'),
     importIDsFromFile: () => app.addLog('info', 'Import ID từ file'),
     scanIDsFromGroup: () => app.addLog('info', 'Quét ID từ nhóm'),
