@@ -6,6 +6,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:8000">
     <title>Bi Ads - Multi Tool PRO v3.0</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="modal-confirmation.css">
 </head>
 <body>
     <div class="app-container">
@@ -50,6 +51,14 @@
                 <button class="top-nav-item" data-page="messages">
                     <span class="icon">💬</span>
                     <span>Quản lý tin nhắn</span>
+                </button>
+                <button class="top-nav-item" onclick="BiAds.loadTaskHistoryPage()">
+                    <span class="icon">📋</span>
+                    <span>Lịch sử tác vụ</span>
+                </button>
+                <button class="top-nav-item" onclick="BiAds.loadActivityLogPage()">
+                    <span class="icon">📝</span>
+                    <span>Nhật ký hoạt động</span>
                 </button>
                 <button class="top-nav-item" data-page="settings">
                     <span class="icon">⚙️</span>
@@ -321,6 +330,9 @@
     <!-- Modal Container -->
     <div id="modalContainer"></div>
 
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
     <!-- Scripts -->
     <script src="renderer.js"></script>
     <script src="api-client.js"></script>
@@ -329,6 +341,7 @@
     <script src="advanced-features.js"></script>
     <script src="advanced-features-enhanced.js"></script>
     <script src="dashboard.js"></script>
+    <script src="modal-confirmation.js"></script>
     <script src="bi-ads-main.js"></script>
 </body>
 </html>

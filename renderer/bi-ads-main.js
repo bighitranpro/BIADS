@@ -8,10 +8,11 @@ const BiAds = {
     accounts: [],
     currentAccount: null,
     taskRunning: false,
-
+    toastQueue: [],
+    
     // Initialize
     init: function() {
-        console.log('🚀 Bi Ads Multi Tool PRO v2.0 initialized');
+        console.log('🚀 Bi Ads Multi Tool PRO v3.0 initialized');
         
         // Load saved data
         this.loadData();
@@ -24,6 +25,11 @@ const BiAds = {
         
         // Load default content
         this.loadWelcomeScreen();
+        
+        // Show welcome toast
+        setTimeout(() => {
+            this.showToast('success', 'Hệ thống khởi động thành công', 'Chào mừng đến với Bi Ads Multi Tool PRO v3.0! 🚀');
+        }, 500);
     },
 
     // Load saved data from localStorage
@@ -94,17 +100,24 @@ const BiAds = {
 
     // Check backend connection
     checkBackend: async function() {
+        const loadingToast = this.showLoading('Đang kết nối...', 'Kiểm tra kết nối backend');
+        
         try {
             const response = await fetch('http://localhost:8000/health');
             const data = await response.json();
             
+            this.hideToast(loadingToast);
+            
             if (data.status === 'healthy') {
                 this.updateBackendStatus(true);
                 this.log('success', 'Đã kết nối backend thành công');
+                this.showToast('success', 'Backend đã kết nối', `Version: ${data.version || 'N/A'}`);
             }
         } catch (error) {
+            this.hideToast(loadingToast);
             this.updateBackendStatus(false);
             this.log('error', 'Không thể kết nối backend. Vui lòng chạy: npm run backend');
+            this.showToast('error', 'Backend không kết nối được', 'Vui lòng khởi động backend trước khi sử dụng');
         }
     },
 
@@ -350,13 +363,17 @@ const BiAds = {
 
     // Load accounts from backend
     loadAccountsFromBackend: async function() {
+        const loadingToast = this.showLoading('Đang tải...', 'Đang tải danh sách tài khoản từ backend');
+        
         try {
             this.log('info', '🔄 Đang tải danh sách tài khoản từ backend...');
             
             const accounts = await apiClient.getAccounts();
             this.accounts = accounts;
             
+            this.hideToast(loadingToast);
             this.log('success', `✅ Đã tải ${accounts.length} tài khoản thành công`);
+            this.showToast('success', 'Tải tài khoản thành công', `Đã tải ${accounts.length} tài khoản từ backend`);
             
             // Re-render the table
             const tbody = document.getElementById('accountsTableBody');
@@ -403,7 +420,9 @@ const BiAds = {
             }
             
         } catch (error) {
+            this.hideToast(loadingToast);
             this.log('error', `❌ Lỗi tải tài khoản: ${error.message}`);
+            this.showToast('error', 'Lỗi tải tài khoản', error.message);
             
             const container = document.getElementById('accountsTableContainer');
             if (container) {
@@ -422,41 +441,84 @@ const BiAds = {
 
     // Check account status (live/die)
     checkAccountStatus: async function(accountId) {
+        const loadingToast = this.showLoading('Đang kiểm tra...', 'Khởi động Chrome và đăng nhập tài khoản');
+        
         try {
             this.log('info', `🔍 Đang kiểm tra tài khoản ID ${accountId}...`);
             
-            const result = await apiClient.checkAccountStatus(accountId);
+            // Call new Chrome-based check API
+            const response = await fetch('http://localhost:8000/api/accounts/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ account_id: accountId })
+            });
             
-            const status = result.is_live ? '✅ LIVE' : '❌ DIE';
-            this.log('success', `${status} - ${result.reason}`);
+            const result = await response.json();
             
-            // Reload accounts to show updated status
-            await this.loadAccountsFromBackend();
+            this.hideToast(loadingToast);
+            
+            if (result.success) {
+                this.log('success', `✅ ${result.message}`);
+                this.showToast('success', 'Đã bắt đầu kiểm tra', 
+                    'Tác vụ đang chạy trong background. Xem kết quả trong Lịch sử tác vụ');
+                
+                // Auto-refresh after 5 seconds
+                setTimeout(() => {
+                    this.loadAccountsFromBackend();
+                }, 5000);
+            } else {
+                throw new Error(result.message || 'Check failed');
+            }
             
         } catch (error) {
+            this.hideToast(loadingToast);
             this.log('error', `❌ Lỗi kiểm tra: ${error.message}`);
+            this.showToast('error', 'Lỗi kiểm tra tài khoản', error.message);
         }
     },
 
     // Check all accounts status
     checkAllAccountsStatus: async function() {
-        if (!confirm('Kiểm tra tất cả tài khoản? Quá trình này có thể mất vài phút.')) {
-            return;
-        }
-        
-        try {
-            this.log('info', '🔄 Đang kiểm tra tất cả tài khoản...');
-            
-            const result = await apiClient.checkAccountsStatusBulk();
-            
-            this.log('success', `✅ Hoàn thành: ${result.live_count} live, ${result.die_count} die`);
-            
-            // Reload accounts
-            await this.loadAccountsFromBackend();
-            
-        } catch (error) {
-            this.log('error', `❌ Lỗi: ${error.message}`);
-        }
+        // Show modal confirmation
+        ModalConfirmation.showWarning({
+            title: 'Kiểm tra tất cả tài khoản?',
+            message: `Hệ thống sẽ mở ${this.accounts.length} Chrome sessions để kiểm tra`,
+            details: 'Quá trình này có thể mất vài phút. Bạn có thể theo dõi tiến độ trong Lịch sử tác vụ.',
+            confirmText: 'Bắt đầu kiểm tra',
+            cancelText: 'Hủy',
+            onConfirm: async () => {
+                try {
+                    this.log('info', '🔄 Đang bắt đầu kiểm tra tất cả tài khoản...');
+                    
+                    const account_ids = this.accounts.map(acc => acc.id);
+                    
+                    const response = await fetch('http://localhost:8000/api/accounts/check-multiple', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ account_ids: account_ids })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.log('success', `✅ ${result.message}`);
+                        this.showToast('success', 'Đã bắt đầu kiểm tra', 
+                            `${result.account_count} tài khoản đang được kiểm tra. Xem tiến độ trong Lịch sử tác vụ`);
+                        
+                        // Auto-refresh after 10 seconds
+                        setTimeout(() => {
+                            this.loadAccountsFromBackend();
+                        }, 10000);
+                    } else {
+                        throw new Error(result.message || 'Check failed');
+                    }
+                    
+                } catch (error) {
+                    this.log('error', `❌ Lỗi: ${error.message}`);
+                    this.showToast('error', 'Lỗi kiểm tra tài khoản', error.message);
+                }
+            }
+        });
     },
 
     // Show assign proxy modal
@@ -533,34 +595,54 @@ const BiAds = {
 
     // Use account by ID
     useAccountById: async function(accountId) {
+        const loadingToast = this.showLoading('Đang chọn...', 'Đang chọn tài khoản');
+        
         try {
             const account = await apiClient.getAccountById(accountId);
             this.currentAccount = account;
             this.saveData();
+            
+            this.hideToast(loadingToast);
             this.log('success', `✅ Đang sử dụng tài khoản: ${account.name || account.uid}`);
+            this.showToast('success', 'Đã chọn tài khoản', 
+                `Đang sử dụng: ${account.name || account.uid}`);
             
             // Re-render page
             this.loadPage('accounts');
         } catch (error) {
+            this.hideToast(loadingToast);
             this.log('error', `❌ Lỗi: ${error.message}`);
+            this.showToast('error', 'Lỗi chọn tài khoản', error.message);
         }
     },
 
     // Delete account by ID
     deleteAccountById: async function(accountId) {
-        if (!confirm('Bạn có chắc muốn xóa tài khoản này?')) {
-            return;
-        }
-        
-        try {
-            await apiClient.deleteAccount(accountId);
-            this.log('success', '✅ Đã xóa tài khoản');
-            
-            // Reload accounts
-            await this.loadAccountsFromBackend();
-        } catch (error) {
-            this.log('error', `❌ Lỗi: ${error.message}`);
-        }
+        // Show modal confirmation
+        ModalConfirmation.showDanger({
+            title: 'Xóa tài khoản?',
+            message: 'Bạn có chắc chắn muốn xóa tài khoản này?',
+            details: 'Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan sẽ bị xóa vĩnh viễn.',
+            confirmText: 'Xóa ngay',
+            cancelText: 'Hủy',
+            onConfirm: async () => {
+                const loadingToast = this.showLoading('Đang xóa...', 'Đang xóa tài khoản');
+                
+                try {
+                    await apiClient.deleteAccount(accountId);
+                    this.hideToast(loadingToast);
+                    this.log('success', '✅ Đã xóa tài khoản');
+                    this.showToast('success', 'Đã xóa tài khoản', 'Tài khoản đã được xóa khỏi hệ thống');
+                    
+                    // Reload accounts
+                    await this.loadAccountsFromBackend();
+                } catch (error) {
+                    this.hideToast(loadingToast);
+                    this.log('error', `❌ Lỗi: ${error.message}`);
+                    this.showToast('error', 'Lỗi xóa tài khoản', error.message);
+                }
+            }
+        });
     },
 
     // Show Add Account Modal
@@ -1025,18 +1107,19 @@ const BiAds = {
     // Start task
     startTask: function() {
         if (!this.currentAccount) {
-            alert('Vui lòng chọn tài khoản trước!');
+            this.showToast('warning', 'Chưa chọn tài khoản', 'Vui lòng chọn tài khoản trước khi bắt đầu tác vụ');
             return;
         }
         
         if (!this.currentTask) {
-            alert('Vui lòng chọn tác vụ trước!');
+            this.showToast('warning', 'Chưa chọn tác vụ', 'Vui lòng chọn tác vụ từ menu bên trái');
             return;
         }
         
         this.taskRunning = true;
         this.log('info', `Bắt đầu tác vụ: ${this.currentTask}`);
         this.log('info', `Tài khoản: ${this.currentAccount.name}`);
+        this.showToast('info', 'Bắt đầu tác vụ', `Đang chạy: ${this.currentTask}`);
         
         // Call API to start task
         this.callAPI('start-task', {
@@ -1048,16 +1131,19 @@ const BiAds = {
     // Stop task
     stopTask: function() {
         if (!this.taskRunning) {
-            alert('Không có tác vụ nào đang chạy!');
+            this.showToast('warning', 'Không có tác vụ đang chạy', 'Chưa có tác vụ nào được khởi động');
             return;
         }
         
         this.taskRunning = false;
         this.log('warning', 'Đã dừng tác vụ');
+        this.showToast('warning', 'Đã dừng tác vụ', 'Tác vụ đã được dừng lại');
     },
 
     // Call API
     callAPI: async function(endpoint, data) {
+        const loadingToast = this.showLoading('Đang xử lý...', 'Gửi request tới backend');
+        
         try {
             this.log('info', `Đang gửi request tới backend...`);
             
@@ -1070,14 +1156,19 @@ const BiAds = {
             });
             
             const result = await response.json();
+            this.hideToast(loadingToast);
             
             if (result.success) {
                 this.log('success', `Tác vụ đã được tạo! Task ID: ${result.task_id || 'N/A'}`);
+                this.showToast('success', 'Tác vụ đã được tạo', `Task ID: ${result.task_id || 'N/A'}`);
             } else {
                 this.log('error', `Lỗi: ${result.message}`);
+                this.showToast('error', 'Lỗi xử lý tác vụ', result.message || 'Không rõ nguyên nhân');
             }
         } catch (error) {
+            this.hideToast(loadingToast);
             this.log('error', `Không thể kết nối backend: ${error.message}`);
+            this.showToast('error', 'Lỗi kết nối backend', error.message);
         }
     },
 
@@ -1289,6 +1380,128 @@ const BiAds = {
             content.innerHTML = html;
         } catch (error) {
             content.innerHTML = '<div class="info-box"><h4>❓ Help</h4><p>Loading help...</p></div>';
+        }
+    },
+    
+    // Load Task History Page
+    loadTaskHistoryPage: async function() {
+        const content = document.getElementById('contentBody');
+        const title = document.getElementById('contentTitle');
+        title.textContent = '📋 Lịch sử tác vụ & Chrome Sessions';
+        
+        try {
+            const response = await fetch('task-history.html');
+            const html = await response.text();
+            content.innerHTML = html;
+            
+            // Execute any scripts in the loaded content
+            const scripts = content.querySelectorAll('script');
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                document.body.appendChild(newScript);
+                document.body.removeChild(newScript);
+            });
+        } catch (error) {
+            console.error('Error loading task history page:', error);
+            content.innerHTML = '<div class="info-box"><h4>📋 Task History</h4><p>Đang tải lịch sử tác vụ...</p></div>';
+        }
+    },
+    
+    // Load Activity Log Page
+    loadActivityLogPage: async function() {
+        const content = document.getElementById('contentBody');
+        const title = document.getElementById('contentTitle');
+        title.textContent = '📝 Nhật ký hoạt động';
+        
+        try {
+            const response = await fetch('activity-log.html');
+            const html = await response.text();
+            content.innerHTML = html;
+            
+            // Execute any scripts in the loaded content
+            const scripts = content.querySelectorAll('script');
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                document.body.appendChild(newScript);
+                document.body.removeChild(newScript);
+            });
+        } catch (error) {
+            console.error('Error loading activity log page:', error);
+            content.innerHTML = '<div class="info-box"><h4>📝 Activity Log</h4><p>Đang tải nhật ký hoạt động...</p></div>';
+        }
+    },
+    
+    // Toast Notification System
+    showToast: function(type, title, message, duration = 5000) {
+        const container = document.getElementById('toastContainer');
+        if (!container) {
+            console.error('Toast container not found');
+            return;
+        }
+        
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        // Icon based on type
+        const icons = {
+            success: '✅',
+            error: '❌',
+            warning: '⚠️',
+            info: 'ℹ️',
+            loading: '⏳'
+        };
+        
+        const icon = icons[type] || '📢';
+        
+        // Build toast content
+        toast.innerHTML = `
+            <div class="toast-icon">${icon}</div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                ${message ? `<div class="toast-message">${message}</div>` : ''}
+            </div>
+            <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+        `;
+        
+        // Add to container
+        container.appendChild(toast);
+        
+        // Trigger animation
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 10);
+        
+        // Auto remove after duration
+        if (duration > 0) {
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => {
+                    toast.remove();
+                }, 400);
+            }, duration);
+        }
+        
+        // Log to console
+        console.log(`[${type.toUpperCase()}] ${title}${message ? ': ' + message : ''}`);
+        
+        return toast;
+    },
+    
+    // Show loading toast (returns toast element for later removal)
+    showLoading: function(title, message) {
+        return this.showToast('loading', title, message, 0); // 0 = no auto-hide
+    },
+    
+    // Hide specific toast
+    hideToast: function(toastElement) {
+        if (toastElement && toastElement.parentElement) {
+            toastElement.classList.add('hiding');
+            setTimeout(() => {
+                toastElement.remove();
+            }, 400);
         }
     }
 };

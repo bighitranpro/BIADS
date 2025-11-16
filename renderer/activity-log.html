@@ -1,0 +1,859 @@
+<style>
+    .activity-log-container {
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .activity-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .activity-title .icon {
+        font-size: 32px;
+    }
+
+    .activity-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .activity-stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+        border-radius: 12px;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+    }
+
+    .activity-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .activity-stat-card.info {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+
+    .activity-stat-card.success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .activity-stat-card.warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .activity-stat-card.error {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .activity-stat-card.recent {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    }
+
+    .activity-stat-label {
+        font-size: 12px;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .activity-stat-value {
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .activity-filter-bar {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .filter-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .filter-select {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 150px;
+    }
+
+    .filter-select:hover {
+        border-color: #3b82f6;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 10px;
+        margin-left: auto;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .filter-btn.primary {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+
+    .filter-btn.primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .filter-btn.secondary {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .filter-btn.secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .filter-btn.danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .filter-btn.danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .activity-table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .activity-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .activity-table thead {
+        background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    }
+
+    .activity-table th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 12px;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .activity-table td {
+        padding: 15px;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 14px;
+        color: #374151;
+    }
+
+    .activity-table tbody tr {
+        transition: background-color 0.2s;
+    }
+
+    .activity-table tbody tr:hover {
+        background-color: #f9fafb;
+    }
+
+    .activity-level-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .activity-level-badge.info {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .activity-level-badge.success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .activity-level-badge.warning {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .activity-level-badge.error {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .activity-action-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        background: #f3f4f6;
+        color: #374151;
+        font-family: 'Courier New', monospace;
+    }
+
+    .activity-account-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .activity-account-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 12px;
+    }
+
+    .activity-account-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .activity-account-name {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 13px;
+    }
+
+    .activity-account-uid {
+        font-size: 11px;
+        color: #9ca3af;
+    }
+
+    .activity-timestamp {
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .activity-message {
+        max-width: 400px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .activity-empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: #9ca3af;
+    }
+
+    .activity-empty .icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .activity-empty h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 8px;
+    }
+
+    .activity-empty p {
+        font-size: 14px;
+        color: #9ca3af;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        padding: 20px;
+        background: white;
+        border-radius: 0 0 12px 12px;
+    }
+
+    .pagination-btn {
+        padding: 8px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: white;
+        color: #374151;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .pagination-info {
+        font-size: 14px;
+        color: #6b7280;
+        padding: 0 15px;
+    }
+
+    /* Timeline View Toggle */
+    .view-toggle {
+        display: flex;
+        gap: 5px;
+        background: #f3f4f6;
+        padding: 4px;
+        border-radius: 8px;
+    }
+
+    .view-toggle-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: #6b7280;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .view-toggle-btn.active {
+        background: white;
+        color: #3b82f6;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Timeline View */
+    .activity-timeline {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 20px;
+        padding: 20px 0;
+        border-left: 2px solid #e5e7eb;
+        margin-left: 20px;
+        position: relative;
+    }
+
+    .timeline-item:last-child {
+        border-left-color: transparent;
+    }
+
+    .timeline-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        position: absolute;
+        left: -7px;
+        top: 25px;
+    }
+
+    .timeline-dot.info { background: #3b82f6; }
+    .timeline-dot.success { background: #10b981; }
+    .timeline-dot.warning { background: #f59e0b; }
+    .timeline-dot.error { background: #ef4444; }
+
+    .timeline-content {
+        flex: 1;
+        padding-left: 10px;
+    }
+
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .timeline-action {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 15px;
+    }
+
+    .timeline-message {
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .timeline-meta {
+        display: flex;
+        gap: 15px;
+        font-size: 12px;
+        color: #9ca3af;
+    }
+</style>
+
+<div class="activity-log-container">
+    <!-- Header -->
+    <div class="activity-header">
+        <h1 class="activity-title">
+            <span class="icon">📋</span>
+            Nhật ký hoạt động
+        </h1>
+        <div class="view-toggle">
+            <button class="view-toggle-btn active" onclick="activityLog.switchView('table')">
+                📊 Bảng
+            </button>
+            <button class="view-toggle-btn" onclick="activityLog.switchView('timeline')">
+                ⏱️ Timeline
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="activity-stats-grid">
+        <div class="activity-stat-card">
+            <div class="activity-stat-label">Tổng Log</div>
+            <div class="activity-stat-value" id="statTotal">0</div>
+        </div>
+        <div class="activity-stat-card info">
+            <div class="activity-stat-label">Info</div>
+            <div class="activity-stat-value" id="statInfo">0</div>
+        </div>
+        <div class="activity-stat-card success">
+            <div class="activity-stat-label">Success</div>
+            <div class="activity-stat-value" id="statSuccess">0</div>
+        </div>
+        <div class="activity-stat-card warning">
+            <div class="activity-stat-label">Warning</div>
+            <div class="activity-stat-value" id="statWarning">0</div>
+        </div>
+        <div class="activity-stat-card error">
+            <div class="activity-stat-label">Error</div>
+            <div class="activity-stat-value" id="statError">0</div>
+        </div>
+        <div class="activity-stat-card recent">
+            <div class="activity-stat-label">24h gần đây</div>
+            <div class="activity-stat-value" id="statRecent">0</div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="activity-filter-bar">
+        <div class="filter-group">
+            <label class="filter-label">Level</label>
+            <select id="filterLevel" class="filter-select">
+                <option value="">Tất cả</option>
+                <option value="info">Info</option>
+                <option value="success">Success</option>
+                <option value="warning">Warning</option>
+                <option value="error">Error</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">Action</label>
+            <select id="filterAction" class="filter-select">
+                <option value="">Tất cả</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button class="filter-btn primary" onclick="activityLog.applyFilters()">
+                🔍 Lọc
+            </button>
+            <button class="filter-btn secondary" onclick="activityLog.refreshLogs()">
+                🔄 Refresh
+            </button>
+            <button class="filter-btn danger" onclick="activityLog.clearOldLogs()">
+                🗑️ Xóa cũ
+            </button>
+        </div>
+    </div>
+
+    <!-- Table View -->
+    <div id="tableView" class="activity-table-container">
+        <table class="activity-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Level</th>
+                    <th>Action</th>
+                    <th>Tài khoản</th>
+                    <th>Message</th>
+                    <th>Thời gian</th>
+                </tr>
+            </thead>
+            <tbody id="activityTableBody">
+                <!-- Logs will be loaded here -->
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            <button class="pagination-btn" id="prevBtn" onclick="activityLog.prevPage()">
+                ← Trước
+            </button>
+            <span class="pagination-info" id="paginationInfo">Page 1</span>
+            <button class="pagination-btn" id="nextBtn" onclick="activityLog.nextPage()">
+                Sau →
+            </button>
+        </div>
+    </div>
+
+    <!-- Timeline View -->
+    <div id="timelineView" class="activity-timeline" style="display: none;">
+        <div id="timelineContent">
+            <!-- Timeline items will be loaded here -->
+        </div>
+        
+        <div class="pagination">
+            <button class="pagination-btn" id="prevBtnTimeline" onclick="activityLog.prevPage()">
+                ← Trước
+            </button>
+            <span class="pagination-info" id="paginationInfoTimeline">Page 1</span>
+            <button class="pagination-btn" id="nextBtnTimeline" onclick="activityLog.nextPage()">
+                Sau →
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+const activityLog = {
+    currentPage: 1,
+    logsPerPage: 50,
+    currentView: 'table',
+    
+    async init() {
+        console.log('Activity Log initialized');
+        await this.loadStats();
+        await this.loadActions();
+        await this.loadLogs();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(() => this.refreshLogs(), 30000);
+    },
+    
+    async loadStats() {
+        try {
+            const response = await fetch('http://localhost:8000/api/activity/stats');
+            const stats = await response.json();
+            
+            document.getElementById('statTotal').textContent = stats.total_logs;
+            document.getElementById('statInfo').textContent = stats.info_count;
+            document.getElementById('statSuccess').textContent = stats.success_count;
+            document.getElementById('statWarning').textContent = stats.warning_count;
+            document.getElementById('statError').textContent = stats.error_count;
+            document.getElementById('statRecent').textContent = stats.recent_24h;
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    },
+    
+    async loadActions() {
+        try {
+            const response = await fetch('http://localhost:8000/api/activity/actions');
+            const data = await response.json();
+            
+            const select = document.getElementById('filterAction');
+            select.innerHTML = '<option value="">Tất cả</option>';
+            
+            data.actions.forEach(action => {
+                const option = document.createElement('option');
+                option.value = action.value;
+                option.textContent = action.label;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading actions:', error);
+        }
+    },
+    
+    async loadLogs() {
+        try {
+            const level = document.getElementById('filterLevel').value;
+            const action = document.getElementById('filterAction').value;
+            const offset = (this.currentPage - 1) * this.logsPerPage;
+            
+            let url = `http://localhost:8000/api/activity/?limit=${this.logsPerPage}&offset=${offset}`;
+            if (level) url += `&level=${level}`;
+            if (action) url += `&action=${action}`;
+            
+            const response = await fetch(url);
+            const logs = await response.json();
+            
+            if (this.currentView === 'table') {
+                this.renderTable(logs);
+            } else {
+                this.renderTimeline(logs);
+            }
+            
+            this.updatePagination(logs.length);
+        } catch (error) {
+            console.error('Error loading logs:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể tải logs');
+        }
+    },
+    
+    renderTable(logs) {
+        const tbody = document.getElementById('activityTableBody');
+        
+        if (logs.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6">
+                        <div class="activity-empty">
+                            <div class="icon">📭</div>
+                            <h3>Chưa có log nào</h3>
+                            <p>Các hoạt động của bạn sẽ xuất hiện ở đây</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        tbody.innerHTML = logs.map(log => `
+            <tr>
+                <td>#${log.id}</td>
+                <td>
+                    <span class="activity-level-badge ${log.level}">${log.level}</span>
+                </td>
+                <td>
+                    <span class="activity-action-badge">${log.action}</span>
+                </td>
+                <td>
+                    ${log.account_info ? `
+                        <div class="activity-account-info">
+                            <div class="activity-account-avatar">
+                                ${log.account_info.name ? log.account_info.name.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                            <div class="activity-account-details">
+                                <span class="activity-account-name">${log.account_info.name || 'Unknown'}</span>
+                                <span class="activity-account-uid">${log.account_info.uid}</span>
+                            </div>
+                        </div>
+                    ` : '<span style="color: #9ca3af;">-</span>'}
+                </td>
+                <td>
+                    <div class="activity-message" title="${log.message}">
+                        ${log.message}
+                    </div>
+                </td>
+                <td>
+                    <span class="activity-timestamp">${this.formatTime(log.created_at)}</span>
+                </td>
+            </tr>
+        `).join('');
+    },
+    
+    renderTimeline(logs) {
+        const container = document.getElementById('timelineContent');
+        
+        if (logs.length === 0) {
+            container.innerHTML = `
+                <div class="activity-empty">
+                    <div class="icon">📭</div>
+                    <h3>Chưa có log nào</h3>
+                    <p>Các hoạt động của bạn sẽ xuất hiện ở đây</p>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = logs.map(log => `
+            <div class="timeline-item">
+                <div class="timeline-dot ${log.level}"></div>
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <div class="timeline-action">
+                            <span class="activity-action-badge">${log.action}</span>
+                        </div>
+                        <span class="activity-level-badge ${log.level}">${log.level}</span>
+                    </div>
+                    <div class="timeline-message">${log.message}</div>
+                    <div class="timeline-meta">
+                        ${log.account_info ? `
+                            <span>👤 ${log.account_info.name} (${log.account_info.uid})</span>
+                        ` : ''}
+                        ${log.task_id ? `<span>🎯 Task: ${log.task_id}</span>` : ''}
+                        <span>🕐 ${this.formatTime(log.created_at)}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    },
+    
+    formatTime(isoString) {
+        const date = new Date(isoString);
+        const now = new Date();
+        const diff = Math.floor((now - date) / 1000); // seconds
+        
+        if (diff < 60) return `${diff} giây trước`;
+        if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+        if (diff < 604800) return `${Math.floor(diff / 86400)} ngày trước`;
+        
+        return date.toLocaleDateString('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    },
+    
+    switchView(view) {
+        this.currentView = view;
+        
+        // Update toggle buttons
+        document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Show/hide views
+        if (view === 'table') {
+            document.getElementById('tableView').style.display = 'block';
+            document.getElementById('timelineView').style.display = 'none';
+        } else {
+            document.getElementById('tableView').style.display = 'none';
+            document.getElementById('timelineView').style.display = 'block';
+        }
+        
+        this.loadLogs();
+    },
+    
+    applyFilters() {
+        this.currentPage = 1;
+        this.loadLogs();
+        BiAds.showToast('info', 'Đã lọc', 'Đang tải logs với filter mới');
+    },
+    
+    async refreshLogs() {
+        await this.loadStats();
+        await this.loadLogs();
+        BiAds.showToast('success', 'Đã refresh', 'Logs đã được cập nhật');
+    },
+    
+    async clearOldLogs() {
+        if (!confirm('Xóa logs cũ hơn 30 ngày?')) return;
+        
+        try {
+            const response = await fetch('http://localhost:8000/api/activity/clear-old?days=30', {
+                method: 'DELETE'
+            });
+            const data = await response.json();
+            
+            BiAds.showToast('success', 'Đã xóa', `Đã xóa ${data.deleted_count} logs cũ`);
+            await this.refreshLogs();
+        } catch (error) {
+            console.error('Error clearing logs:', error);
+            BiAds.showToast('error', 'Lỗi', 'Không thể xóa logs cũ');
+        }
+    },
+    
+    updatePagination(logCount) {
+        const info = `Trang ${this.currentPage}`;
+        document.getElementById('paginationInfo').textContent = info;
+        if (document.getElementById('paginationInfoTimeline')) {
+            document.getElementById('paginationInfoTimeline').textContent = info;
+        }
+        
+        // Disable prev if on first page
+        const prevBtns = [document.getElementById('prevBtn'), document.getElementById('prevBtnTimeline')];
+        prevBtns.forEach(btn => {
+            if (btn) btn.disabled = this.currentPage === 1;
+        });
+        
+        // Disable next if no more logs
+        const nextBtns = [document.getElementById('nextBtn'), document.getElementById('nextBtnTimeline')];
+        nextBtns.forEach(btn => {
+            if (btn) btn.disabled = logCount < this.logsPerPage;
+        });
+    },
+    
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            this.loadLogs();
+        }
+    },
+    
+    nextPage() {
+        this.currentPage++;
+        this.loadLogs();
+    }
+};
+
+// Initialize when page loads
+activityLog.init();
+</script>
