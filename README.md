@@ -1,236 +1,331 @@
-# 🚀 Ứng dụng ElectronJS
+# 🚀 Bi Ads Multi Tool PRO v3.0
 
-Ứng dụng desktop đa nền tảng được xây dựng với ElectronJS - hỗ trợ Windows, macOS và Linux.
+Ứng dụng quản lý tài khoản Facebook toàn diện với automation và analytics.
 
-## ✨ Tính năng
+## ✨ Tính năng chính
 
-- 🖥️ **Đa nền tảng**: Chạy trên Windows, macOS và Linux
-- 🎨 **Giao diện đẹp**: UI hiện đại với gradient và animations
-- 🔒 **Bảo mật**: Sử dụng Context Isolation và Preload Script
-- 📂 **Xử lý File**: Mở và lưu file với native dialogs
-- 💬 **Thông báo**: Hiển thị message boxes và notifications
-- ⚡ **IPC Communication**: Giao tiếp an toàn giữa Main và Renderer process
-- 📦 **Packaging**: Dễ dàng đóng gói thành file cài đặt
+### 🔐 Quản lý Tài khoản
+- ✅ Quản lý đa tài khoản Facebook
+- ✅ Import/Export tài khoản từ file
+- ✅ Kiểm tra trạng thái tài khoản tự động
+- ✅ Quản lý proxy cho mỗi tài khoản
+- ✅ Lưu trữ cookie và session
+
+### 👥 Tài khoản phụ (Sub Accounts)
+- ✅ Quản lý tài khoản phụ để tăng tương tác
+- ✅ Tự động like, comment, share
+- ✅ Import hàng loạt từ file
+- ✅ Gán tài khoản chính
+
+### 🆔 Quản lý Facebook IDs
+- ✅ Lưu trữ và phân loại UID
+- ✅ Import từ file hoặc URL Facebook
+- ✅ Validation UID tự động
+- ✅ Tìm kiếm và filter nâng cao
+- ✅ Xuất danh sách theo format
+
+### 📝 Bài viết đã đăng (Posted Content)
+- ✅ Theo dõi bài viết đã đăng
+- ✅ Thống kê engagement (likes, comments, shares)
+- ✅ Tìm kiếm với highlighting
+- ✅ Chỉnh sửa và xóa bài viết
+- ✅ Bulk operations
+
+### 🌐 Quản lý Proxy
+- ✅ Import proxy từ file
+- ✅ Kiểm tra proxy tự động
+- ✅ Gán proxy cho tài khoản
+- ✅ 3 chiến lược gán: Round Robin, Random, One-to-One
+- ✅ Bulk operations với checkbox
+
+### 🤖 Automation & Tasks
+- ✅ Tự động like bài viết
+- ✅ Tự động comment
+- ✅ Tự động kết bạn
+- ✅ Tự động join group
+- ✅ Task scheduling và queuing
+- ✅ Real-time task status
+
+### 📊 Dashboard & Analytics
+- ✅ Thống kê tổng quan
+- ✅ Biểu đồ engagement
+- ✅ Activity logs
+- ✅ Performance metrics
+
+### 🔧 Chrome Automation
+- ✅ Tích hợp Chrome automation
+- ✅ Quản lý Chrome profiles
+- ✅ Auto-login Facebook
+- ✅ 2FA auto-entry
 
 ## 📋 Yêu cầu hệ thống
 
-- Node.js 14.x hoặc cao hơn
-- npm hoặc yarn
-- Windows 7/macOS 10.10/Ubuntu 12.04 trở lên
+- **Node.js**: 14.x hoặc cao hơn
+- **Python**: 3.11 hoặc cao hơn
+- **Chrome/Chromium**: Phiên bản mới nhất
+- **OS**: Windows 10+, macOS 10.13+, Ubuntu 20.04+
 
 ## 🛠️ Cài đặt
 
 ### 1. Clone repository
 
 ```bash
-git clone <repository-url>
-cd webapp
+git clone https://github.com/bighitranpro/BIADS.git
+cd BIADS
 ```
 
-### 2. Cài đặt dependencies
+### 2. Cài đặt Backend (Python)
+
+```bash
+cd backend
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# macOS/Linux
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+### 3. Cài đặt Frontend (Electron)
 
 ```bash
 npm install
 ```
 
+### 4. Cấu hình môi trường
+
+```bash
+# Copy file .env.example
+cp .env.example .env
+cp backend/.env.example backend/.env
+
+# Chỉnh sửa .env với thông tin của bạn
+```
+
 ## 🚀 Chạy ứng dụng
 
-### Chế độ phát triển
+### Chạy Backend
+
+```bash
+cd backend
+source venv/bin/activate  # Windows: venv\Scripts\activate
+python main.py
+```
+
+Backend sẽ chạy tại: `http://localhost:8000`
+
+### Chạy Frontend (Electron)
+
+Trong terminal khác:
 
 ```bash
 npm start
 ```
 
-### Chế độ debug (mở DevTools)
+### Hoặc dùng script tự động
 
 ```bash
-npm run dev
-```
+# Linux/macOS
+./scripts/START_V3.sh
 
-## 📦 Đóng gói ứng dụng
-
-### Build cho tất cả nền tảng
-
-```bash
-npm run build
-```
-
-### Build cho nền tảng cụ thể
-
-```bash
 # Windows
-npm run build:win
-
-# macOS
-npm run build:mac
-
-# Linux
-npm run build:linux
+scripts\START_BI_ADS.bat
 ```
-
-File build sẽ được tạo trong thư mục `dist/`
 
 ## 📁 Cấu trúc dự án
 
 ```
-webapp/
-├── main.js                 # Main process (Node.js + Electron APIs)
-├── preload.js             # Preload script (Bridge giữa main và renderer)
-├── package.json           # Cấu hình dự án và dependencies
-├── renderer/              # Renderer process (Frontend)
-│   ├── index.html        # HTML chính
-│   ├── styles.css        # Styles
-│   └── renderer.js       # JavaScript cho renderer
-├── assets/               # Icons và tài nguyên
-│   ├── icon.png
-│   ├── icon.ico
-│   └── icon.icns
-├── node_modules/         # Dependencies (auto-generated)
-└── dist/                 # Build output (auto-generated)
+BIADS/
+├── backend/              # FastAPI Backend
+│   ├── api/             # API Endpoints
+│   │   ├── account_checker_api.py
+│   │   ├── account_interactions_api.py
+│   │   ├── facebook_ids_api.py
+│   │   ├── sub_accounts_api.py
+│   │   ├── posted_content_api.py
+│   │   ├── proxy_bulk_api.py
+│   │   └── ...
+│   ├── core/            # Database & CRUD
+│   │   ├── database.py
+│   │   └── crud.py
+│   ├── services/        # Business Logic
+│   │   ├── chrome_manager.py
+│   │   ├── facebook_automator.py
+│   │   ├── activity_logger.py
+│   │   └── ...
+│   └── main.py         # FastAPI App
+├── renderer/            # Electron Frontend
+│   ├── index.html      # Main UI
+│   ├── bi-ads-main.js  # Main Logic
+│   ├── advanced-features.js
+│   ├── modal-confirmation.js
+│   └── styles.css
+├── scripts/            # Utility Scripts
+│   ├── START_V3.sh
+│   └── START_BI_ADS.bat
+├── docs/               # Documentation
+│   ├── README.md
+│   └── archive/
+├── tests/              # Tests
+│   └── frontend/
+├── backups/            # Database Backups
+│   └── database/
+├── main.js            # Electron Main Process
+├── preload.js         # Electron Preload
+├── package.json       # Node.js Config
+└── README.md          # This file
 ```
 
-## 🏗️ Kiến trúc
+## 📚 Documentation
 
-### Main Process (`main.js`)
-- Quản lý vòng đời ứng dụng
-- Tạo và quản lý windows
-- Xử lý system events
-- Tương tác với OS APIs
-- Xử lý IPC từ renderer process
+Chi tiết hơn về dự án, xem [docs/README.md](docs/README.md)
 
-### Preload Script (`preload.js`)
-- Bridge an toàn giữa main và renderer
-- Expose APIs cho renderer process
-- Context Isolation để bảo mật
+## 🔧 API Endpoints
 
-### Renderer Process (`renderer/`)
-- Giao diện người dùng (HTML/CSS/JS)
-- Tương tác với user
-- Gửi/nhận messages từ main process
-- Không có quyền truy cập trực tiếp Node.js APIs
+Backend cung cấp RESTful API:
+
+### Accounts
+- `GET /api/accounts` - List accounts
+- `POST /api/accounts` - Create account
+- `PUT /api/accounts/{id}` - Update account
+- `DELETE /api/accounts/{id}` - Delete account
+
+### Sub Accounts (8 endpoints)
+- `GET /api/sub-accounts/` - List với filters
+- `POST /api/sub-accounts/` - Create
+- `POST /api/sub-accounts/bulk/import` - Import từ file
+
+### Facebook IDs (10 endpoints)
+- `GET /api/facebook-ids/` - List với search
+- `GET /api/facebook-ids/stats` - Statistics
+- `POST /api/facebook-ids/bulk/import` - Import
+
+### Posted Content (6 endpoints)
+- `GET /api/posted-content/` - List với filters
+- `GET /api/posted-content/search` - Search với highlighting
+- `PUT /api/posted-content/{id}` - Update
+
+### Proxies (7 endpoints)
+- `POST /api/proxies/bulk/assign` - Bulk assign
+- `POST /api/proxies/bulk/check-sync` - Bulk check
+
+### Tasks & Activities
+- `GET /api/tasks/running` - Running tasks
+- `GET /api/activities/` - Activity logs
+
+Chi tiết API: `http://localhost:8000/docs` (FastAPI Swagger UI)
+
+## 🎯 Tiến độ hoàn thành
+
+- ✅ **Backend APIs**: 100% (26/26 endpoints)
+- ✅ **Frontend UI**: 80% (core features complete)
+- ✅ **Database**: 100% (SQLAlchemy + SQLite)
+- ✅ **Chrome Automation**: 90% (basic automation working)
+- ✅ **Activity Logging**: 100%
+- ⏳ **Testing**: 40% (in progress)
+- ⏳ **Documentation**: 60% (in progress)
+
+**Overall Completion**: ~80%
+
+## 🧪 Testing
+
+### Backend Tests
+
+```bash
+cd backend
+pytest
+```
+
+### Frontend Tests
+
+Mở `tests/frontend/test-accounts.html` trong trình duyệt
+
+## 📦 Build & Deploy
+
+### Build Electron App
+
+```bash
+npm run build          # All platforms
+npm run build:win      # Windows
+npm run build:mac      # macOS
+npm run build:linux    # Linux
+```
+
+### Backup Database
+
+```bash
+./backup_database.sh
+```
+
+### Restore Database
+
+```bash
+./restore_database.sh backups/database/bi_ads_YYYYMMDD_HHMMSS.db.gz
+```
+
+## 🐛 Troubleshooting
+
+### Backend không khởi động
+```bash
+cd backend
+pip install --upgrade -r requirements.txt
+python main.py
+```
+
+### Frontend lỗi kết nối API
+- Kiểm tra backend đang chạy: `http://localhost:8000`
+- Kiểm tra CORS settings trong `backend/main.py`
+
+### Chrome automation lỗi
+- Cài đặt Chrome/Chromium mới nhất
+- Kiểm tra ChromeDriver version
+- Xem logs trong Activity Log
 
 ## 🔐 Bảo mật
 
-Ứng dụng này tuân thủ các best practices về bảo mật của Electron:
+- ✅ Context Isolation trong Electron
+- ✅ Environment variables cho sensitive data
+- ✅ SQLite database với proper permissions
+- ✅ API authentication (optional)
+- ✅ Input validation và sanitization
 
-- ✅ Context Isolation enabled
-- ✅ Node Integration disabled
-- ✅ Remote Module disabled
-- ✅ Preload script để expose APIs an toàn
-- ✅ Content Security Policy trong HTML
+## 🤝 Contributing
 
-## 📝 Các lệnh npm
+Contributions are welcome! Please:
 
-| Lệnh | Mô tả |
-|------|-------|
-| `npm start` | Chạy ứng dụng ở chế độ production |
-| `npm run dev` | Chạy ứng dụng với DevTools |
-| `npm run build` | Build cho tất cả nền tảng |
-| `npm run build:win` | Build cho Windows |
-| `npm run build:mac` | Build cho macOS |
-| `npm run build:linux` | Build cho Linux |
-
-## 🎨 Tùy chỉnh
-
-### Thay đổi thông tin ứng dụng
-
-Chỉnh sửa `package.json`:
-
-```json
-{
-  "name": "ten-ung-dung",
-  "version": "1.0.0",
-  "description": "Mo ta ung dung",
-  "author": "Ten ban"
-}
-```
-
-### Thay đổi icon
-
-Đặt các file icon vào thư mục `assets/`:
-- `icon.png` (1024x1024) - cho Linux
-- `icon.ico` (256x256) - cho Windows
-- `icon.icns` - cho macOS
-
-### Thay đổi cấu hình build
-
-Chỉnh sửa section `build` trong `package.json`
-
-## 🐛 Debug
-
-### DevTools
-
-Mở DevTools bằng cách:
-1. Chạy `npm run dev`
-2. Hoặc trong menu: View → Toggle Developer Tools
-
-### Console Logs
-
-- Main process logs: Terminal/Console
-- Renderer process logs: DevTools Console
-
-## 📚 Tài liệu tham khảo
-
-- [Electron Documentation](https://www.electronjs.org/docs)
-- [Electron API Demos](https://github.com/electron/electron-api-demos)
-- [Electron Builder](https://www.electron.build/)
-
-## 🤝 Đóng góp
-
-Mọi đóng góp đều được hoan nghênh! Vui lòng tạo issue hoặc pull request.
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open Pull Request
 
 ## 📄 License
 
-MIT License - Xem file LICENSE để biết thêm chi tiết.
+MIT License - See [LICENSE](LICENSE) file
 
-## 🎯 TODO / Roadmap
+## 📧 Contact & Support
 
-- [ ] Thêm auto-updater
-- [ ] Thêm system tray icon
-- [ ] Thêm keyboard shortcuts
-- [ ] Thêm themes (light/dark mode)
-- [ ] Thêm settings page
-- [ ] Thêm database (SQLite)
-- [ ] Thêm testing (Jest/Spectron)
-- [ ] CI/CD pipeline
+- **GitHub**: https://github.com/bighitranpro/BIADS
+- **Issues**: https://github.com/bighitranpro/BIADS/issues
+- **Pull Requests**: https://github.com/bighitranpro/BIADS/pulls
 
-## ⚡ Performance Tips
+## 🎉 Changelog
 
-- Sử dụng `webPreferences.nodeIntegration: false` để tăng bảo mật
-- Load assets cục bộ thay vì từ CDN
-- Tối ưu hóa images và assets
-- Sử dụng lazy loading cho các component lớn
-- Minimize và bundle code trước khi build production
+### v3.0.0 (2025-11-16)
+- ✅ Complete frontend integration for 3 priority features
+- ✅ Posted Content: Full CRUD + Search + Stats
+- ✅ Facebook IDs: Auto-load + Import + Export
+- ✅ Sub Accounts: Full management system
+- ✅ Proxy Bulk UI: Checkbox selection + 4 bulk ops
+- ✅ Project cleanup: Removed 19 unused docs, webapp-dist
+- ✅ Organized documentation in docs/ folder
 
-## 🆘 Troubleshooting
-
-### Lỗi khi cài đặt dependencies
-
-```bash
-# Xóa node_modules và package-lock.json
-rm -rf node_modules package-lock.json
-
-# Cài lại
-npm install
-```
-
-### Lỗi khi build
-
-```bash
-# Clear cache của electron-builder
-npm run build -- --clear
-```
-
-### Ứng dụng không khởi động
-
-1. Kiểm tra console logs
-2. Kiểm tra file paths trong main.js
-3. Đảm bảo tất cả dependencies đã được cài đặt
-
-## 📧 Liên hệ
-
-Nếu có câu hỏi hoặc vấn đề, vui lòng tạo issue trên GitHub.
+### Earlier versions
+See [docs/archive/](docs/archive/) for historical changelogs
 
 ---
 
-Made with ❤️ using Electron
+Made with ❤️ by bighitranpro
