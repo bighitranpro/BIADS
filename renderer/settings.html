@@ -252,77 +252,169 @@
 </div>
 
 <script>
-// Settings Manager
+// Settings Manager - Updated to use new Settings API
 const settingsManager = {
     async loadSettings() {
         try {
-            const response = await fetch('http://localhost:8000/api/settings');
-            if (response.ok) {
-                const settings = await response.json();
-                this.populateForm(settings);
+            // Use new API client
+            const settings = await window.apiClient.getSettings();
+            this.populateForm(settings);
+            
+            // Log success
+            if (typeof app !== 'undefined') {
+                app.addLog('info', 'Đã tải cài đặt thành công');
             }
         } catch (error) {
             console.error('Error loading settings:', error);
+            if (typeof app !== 'undefined') {
+                app.addLog('error', `Lỗi tải cài đặt: ${error.message}`);
+            }
         }
     },
 
     populateForm(settings) {
-        // Populate all form fields with settings
-        for (const [key, value] of Object.entries(settings)) {
-            const element = document.getElementById(key);
-            if (element) {
-                if (element.type === 'checkbox') {
-                    element.checked = value;
-                } else {
-                    element.value = value;
+        // Map API settings to form fields
+        const fieldMapping = {
+            // General settings
+            'app_name': 'databaseType', // Not exact match but keep for backwards compatibility
+            'language': null,
+            'theme': null,
+            
+            // Database settings
+            'database_type': 'databaseType',
+            'auto_backup': 'autoBackup',
+            
+            // Facebook settings
+            'facebook_app_id': 'facebookAppId',
+            'facebook_app_secret': 'facebookAppSecret',
+            'facebook_api_version': null,
+            
+            // Webhook settings
+            'webhook_verify_token': 'webhookVerifyToken',
+            
+            // Telegram settings
+            'telegram_enabled': null,
+            'telegram_bot_token': 'telegramBotToken',
+            'telegram_chat_id': 'telegramChatId',
+            'telegram_notify_task_complete': 'notifyTaskComplete',
+            'telegram_notify_task_failed': 'notifyTaskFailed',
+            'telegram_notify_error': 'notifyError',
+            'telegram_notify_webhook': 'notifyWebhook',
+            
+            // Task settings
+            'default_delay': 'delayMin',
+            'max_concurrent_tasks': 'maxConcurrent',
+            'default_timeout': 'taskTimeout',
+            'default_retry': 'maxRetries',
+            
+            // Proxy settings
+            'auto_assign_proxy': 'autoAssignProxy',
+            'rotate_proxy_on_error': null,
+            'check_proxy_before_use': null,
+            'proxy_timeout': 'proxyTimeout',
+            
+            // Automation settings
+            'auto_start_tasks': null,
+            'auto_restart_failed_tasks': 'retryFailedTasks',
+            'save_logs_to_file': null,
+            
+            // Advanced settings
+            'debug_mode': 'debugMode',
+            'verbose_logging': null,
+            'api_rate_limit': 'maxActionsPerHour',
+            'log_level': 'logLevel'
+        };
+
+        // Populate form fields
+        for (const [apiKey, formId] of Object.entries(fieldMapping)) {
+            if (formId && settings[apiKey] !== undefined) {
+                const element = document.getElementById(formId);
+                if (element) {
+                    if (element.type === 'checkbox') {
+                        element.checked = settings[apiKey];
+                    } else {
+                        element.value = settings[apiKey];
+                    }
                 }
             }
         }
     },
 
     async saveSettings() {
+        // Collect all settings from form
         const settings = {
-            databaseType: document.getElementById('databaseType').value,
-            databaseUrl: document.getElementById('databaseUrl').value,
-            autoBackup: document.getElementById('autoBackup').checked,
-            facebookAppId: document.getElementById('facebookAppId').value,
-            facebookAppSecret: document.getElementById('facebookAppSecret').value,
-            webhookVerifyToken: document.getElementById('webhookVerifyToken').value,
-            telegramBotToken: document.getElementById('telegramBotToken').value,
-            telegramChatId: document.getElementById('telegramChatId').value,
-            notifyTaskComplete: document.getElementById('notifyTaskComplete').checked,
-            notifyTaskFailed: document.getElementById('notifyTaskFailed').checked,
-            notifyError: document.getElementById('notifyError').checked,
-            notifyWebhook: document.getElementById('notifyWebhook').checked,
-            headlessMode: document.getElementById('headlessMode').checked,
-            maxConcurrent: document.getElementById('maxConcurrent').value,
-            taskTimeout: document.getElementById('taskTimeout').value,
-            proxyRotation: document.getElementById('proxyRotation').value,
-            proxyTimeout: document.getElementById('proxyTimeout').value,
-            autoAssignProxy: document.getElementById('autoAssignProxy').checked,
-            delayMin: document.getElementById('delayMin').value,
-            delayMax: document.getElementById('delayMax').value,
-            maxActionsPerHour: document.getElementById('maxActionsPerHour').value,
-            debugMode: document.getElementById('debugMode').checked,
-            retryFailedTasks: document.getElementById('retryFailedTasks').checked,
-            maxRetries: document.getElementById('maxRetries').value,
-            logLevel: document.getElementById('logLevel').value
+            // General settings
+            app_name: 'Bi Ads Multi Tool PRO',
+            app_version: '3.0.0',
+            language: 'vi',
+            theme: 'dark',
+            
+            // Task settings
+            default_delay: parseInt(document.getElementById('delayMin').value),
+            default_retry: parseInt(document.getElementById('maxRetries').value),
+            default_timeout: parseInt(document.getElementById('taskTimeout').value),
+            max_concurrent_tasks: parseInt(document.getElementById('maxConcurrent').value),
+            
+            // Proxy settings
+            auto_assign_proxy: document.getElementById('autoAssignProxy').checked,
+            rotate_proxy_on_error: true,
+            check_proxy_before_use: true,
+            proxy_timeout: parseInt(document.getElementById('proxyTimeout').value),
+            
+            // Telegram settings
+            telegram_enabled: true,
+            telegram_bot_token: document.getElementById('telegramBotToken').value,
+            telegram_chat_id: document.getElementById('telegramChatId').value,
+            telegram_notify_task_complete: document.getElementById('notifyTaskComplete').checked,
+            telegram_notify_task_failed: document.getElementById('notifyTaskFailed').checked,
+            telegram_notify_error: document.getElementById('notifyError').checked,
+            telegram_notify_webhook: document.getElementById('notifyWebhook').checked,
+            
+            // Facebook settings
+            facebook_app_id: document.getElementById('facebookAppId').value,
+            facebook_app_secret: document.getElementById('facebookAppSecret').value,
+            facebook_api_version: 'v18.0',
+            
+            // Security settings
+            enable_2fa: false,
+            session_timeout: 3600,
+            auto_logout: false,
+            
+            // Automation settings
+            auto_start_tasks: false,
+            auto_restart_failed_tasks: document.getElementById('retryFailedTasks').checked,
+            save_logs_to_file: true,
+            
+            // Performance settings
+            cache_enabled: true,
+            cache_ttl: 300,
+            batch_size: 10,
+            
+            // Advanced settings
+            debug_mode: document.getElementById('debugMode').checked,
+            verbose_logging: document.getElementById('debugMode').checked,
+            api_rate_limit: parseInt(document.getElementById('maxActionsPerHour').value),
+            log_level: document.getElementById('logLevel').value
         };
 
         try {
-            const response = await fetch('http://localhost:8000/api/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(settings)
-            });
-
-            if (response.ok) {
-                app.addLog('success', 'Đã lưu cài đặt thành công');
+            // Use new API client
+            const result = await window.apiClient.updateSettings(settings);
+            
+            if (result.success) {
+                if (typeof app !== 'undefined') {
+                    app.addLog('success', 'Đã lưu cài đặt thành công');
+                }
+                // Show success notification
+                this.showNotification('success', 'Cài đặt đã được lưu thành công!');
             } else {
-                app.addLog('error', 'Không thể lưu cài đặt');
+                throw new Error(result.message || 'Không thể lưu cài đặt');
             }
         } catch (error) {
-            app.addLog('error', `Lỗi: ${error.message}`);
+            if (typeof app !== 'undefined') {
+                app.addLog('error', `Lỗi lưu cài đặt: ${error.message}`);
+            }
+            this.showNotification('error', `Lỗi: ${error.message}`);
         }
     },
 
@@ -331,32 +423,76 @@ const settingsManager = {
         const chatId = document.getElementById('telegramChatId').value;
 
         if (!botToken || !chatId) {
-            app.addLog('warning', 'Vui lòng nhập Bot Token và Chat ID');
+            if (typeof app !== 'undefined') {
+                app.addLog('warning', 'Vui lòng nhập Bot Token và Chat ID');
+            }
+            this.showNotification('warning', 'Vui lòng nhập Bot Token và Chat ID');
             return;
         }
 
         try {
-            const response = await fetch('http://localhost:8000/api/telegram/test', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bot_token: botToken, chat_id: chatId })
-            });
-
-            if (response.ok) {
-                app.addLog('success', 'Đã gửi tin nhắn test! Kiểm tra Telegram của bạn');
+            // First update the settings with current values
+            await window.apiClient.updateSetting('telegram_bot_token', botToken, 'telegram');
+            await window.apiClient.updateSetting('telegram_chat_id', chatId, 'telegram');
+            
+            // Then test the connection
+            const result = await window.apiClient.testTelegram();
+            
+            if (result.success) {
+                if (typeof app !== 'undefined') {
+                    app.addLog('success', 'Đã gửi tin nhắn test! Kiểm tra Telegram của bạn');
+                }
+                this.showNotification('success', 'Đã gửi tin nhắn test thành công! Kiểm tra Telegram của bạn.');
             } else {
-                app.addLog('error', 'Không thể gửi tin nhắn test');
+                throw new Error(result.message || 'Không thể gửi tin nhắn test');
             }
         } catch (error) {
-            app.addLog('error', `Lỗi: ${error.message}`);
+            if (typeof app !== 'undefined') {
+                app.addLog('error', `Lỗi test Telegram: ${error.message}`);
+            }
+            this.showNotification('error', `Lỗi: ${error.message}`);
         }
     },
 
-    resetToDefault() {
-        if (confirm('Bạn có chắc muốn khôi phục cài đặt mặc định?')) {
-            // Reset to default values
-            location.reload();
+    async resetToDefault() {
+        if (confirm('Bạn có chắc muốn khôi phục cài đặt mặc định? Tất cả cài đặt hiện tại sẽ bị xóa.')) {
+            try {
+                // Reset to default by reloading settings
+                await this.loadSettings();
+                this.showNotification('info', 'Đã khôi phục cài đặt mặc định');
+            } catch (error) {
+                this.showNotification('error', `Lỗi: ${error.message}`);
+            }
         }
+    },
+
+    showNotification(type, message) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#2196f3'};
+            color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
     }
 };
 

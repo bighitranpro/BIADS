@@ -1,0 +1,55 @@
+{
+  "general": {
+    "app_name": "Bi Ads Multi Tool PRO",
+    "app_version": "3.0.0",
+    "language": "vi",
+    "theme": "dark"
+  },
+  "task": {
+    "default_delay": 10,
+    "default_retry": 3,
+    "default_timeout": 300,
+    "max_concurrent_tasks": 5
+  },
+  "proxy": {
+    "auto_assign_proxy": true,
+    "rotate_proxy_on_error": true,
+    "check_proxy_before_use": true,
+    "proxy_timeout": 30
+  },
+  "telegram": {
+    "telegram_enabled": true,
+    "telegram_bot_token": "",
+    "telegram_chat_id": "",
+    "telegram_notify_task_complete": true,
+    "telegram_notify_task_failed": true,
+    "telegram_notify_error": true,
+    "telegram_notify_webhook": false
+  },
+  "facebook": {
+    "facebook_app_id": "",
+    "facebook_app_secret": "",
+    "facebook_api_version": "v18.0"
+  },
+  "security": {
+    "enable_2fa": false,
+    "session_timeout": 3600,
+    "auto_logout": false
+  },
+  "automation": {
+    "auto_start_tasks": false,
+    "auto_restart_failed_tasks": true,
+    "save_logs_to_file": true
+  },
+  "performance": {
+    "cache_enabled": true,
+    "cache_ttl": 300,
+    "batch_size": 10
+  },
+  "advanced": {
+    "debug_mode": false,
+    "verbose_logging": false,
+    "api_rate_limit": 100,
+    "log_level": "INFO"
+  }
+}
