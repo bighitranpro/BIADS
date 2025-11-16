@@ -112,6 +112,12 @@ from api.messages_api import router as messages_router
 from api.friend_management_api import router as friend_management_router
 from api.account_interactions_api_enhanced import router as interactions_enhanced_router
 from api.group_management_api import router as group_management_router
+from api.export_api import router as export_router
+from api.proxy_testing_api import router as proxy_testing_router
+from api.fanpage_management_api import router as fanpage_router
+from api.advanced_scanning_api import router as scanning_router
+from api.auto_actions_api import router as auto_actions_router
+from api.misc_features_api import router as misc_router
 
 app.include_router(advanced_router)
 app.include_router(settings_router)
@@ -131,6 +137,12 @@ app.include_router(messages_router)
 app.include_router(friend_management_router)
 app.include_router(interactions_enhanced_router)
 app.include_router(group_management_router)
+app.include_router(fanpage_router)
+app.include_router(scanning_router)
+app.include_router(auto_actions_router)
+app.include_router(misc_router)
+app.include_router(export_router)
+app.include_router(proxy_testing_router)
 
 # ============================================
 # PYDANTIC MODELS

@@ -1,0 +1,808 @@
+/* ============================================
+   BI ADS - MULTI TOOL PRO v3.0 - PREMIUM STYLES
+   Developer: Bi Ran Pro Team
+   Version: 3.0.0 - Professional Edition
+   ============================================ */
+
+/* ============================================
+   1. PREMIUM BRANDING & HEADER
+   ============================================ */
+
+/* Enhanced Top Navigation with Glassmorphism */
+.top-nav {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.95) 0%, 
+        rgba(118, 75, 162, 0.95) 50%,
+        rgba(237, 66, 100, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 
+        0 8px 32px 0 rgba(31, 38, 135, 0.37),
+        0 4px 60px 0 rgba(102, 126, 234, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animated Background Pattern */
+.top-nav::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Premium Brand Logo */
+.top-nav-brand {
+    position: relative;
+    z-index: 2;
+}
+
+.top-nav-brand h1 {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-shadow: 
+        0 2px 10px rgba(0, 0, 0, 0.3),
+        0 0 30px rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, 
+        #ffffff 0%, 
+        #f0f0f0 25%,
+        #ffffff 50%,
+        #e0e0e0 75%,
+        #ffffff 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 4s ease-in-out infinite;
+    position: relative;
+    display: inline-block;
+}
+
+@keyframes gradientShift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Glowing Effect for Brand */
+.top-nav-brand h1::after {
+    content: '🚀 Bi Ads - Multi Tool PRO v3.0';
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    filter: blur(15px);
+    opacity: 0.7;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Premium Badge */
+.premium-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    margin-left: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 
+        0 4px 15px rgba(255, 215, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    animation: pulseBadge 2s ease-in-out infinite;
+}
+
+@keyframes pulseBadge {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 
+            0 4px 15px rgba(255, 215, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 
+            0 6px 25px rgba(255, 215, 0, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+}
+
+/* Developer Credit */
+.developer-credit {
+    position: absolute;
+    bottom: -25px;
+    left: 20px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 12px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.developer-credit::before {
+    content: '👨‍💻 ';
+}
+
+.developer-credit span {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+}
+
+/* ============================================
+   2. ENHANCED TOP NAVIGATION MENU
+   ============================================ */
+
+.top-nav-menu {
+    position: relative;
+    z-index: 2;
+}
+
+.top-nav-item {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.top-nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transition: left 0.5s;
+}
+
+.top-nav-item:hover::before {
+    left: 100%;
+}
+
+.top-nav-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.2),
+        0 0 30px rgba(255, 255, 255, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.top-nav-item.active {
+    background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.3),
+        rgba(255, 255, 255, 0.2));
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 
+        0 8px 25px rgba(0, 0, 0, 0.3),
+        0 0 40px rgba(255, 255, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+}
+
+.top-nav-item .icon {
+    animation: iconFloat 2s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-2px);
+    }
+}
+
+/* Backend Status Enhancement */
+.backend-status {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.backend-status.online {
+    background: rgba(46, 204, 113, 0.3);
+    border-color: rgba(46, 204, 113, 0.5);
+    box-shadow: 
+        0 4px 15px rgba(46, 204, 113, 0.4),
+        0 0 30px rgba(46, 204, 113, 0.2);
+}
+
+.backend-status.online .status-dot {
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.8);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ============================================
+   3. PREMIUM SIDEBAR
+   ============================================ */
+
+.sidebar-tasks {
+    background: linear-gradient(180deg, 
+        #1a1a2e 0%, 
+        #16213e 100%);
+    border-right: 1px solid rgba(102, 126, 234, 0.2);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.sidebar-tasks::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(
+        180deg,
+        transparent,
+        rgba(102, 126, 234, 0.5),
+        transparent
+    );
+}
+
+/* Enhanced Section Header */
+.section-header {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.2),
+        rgba(118, 75, 162, 0.2));
+    border-left: 4px solid #667eea;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.section-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transform: translateX(-100%);
+}
+
+.section-header:hover::before {
+    animation: sweep 1s;
+}
+
+@keyframes sweep {
+    to {
+        transform: translateX(100%);
+    }
+}
+
+.section-header:hover {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.3),
+        rgba(118, 75, 162, 0.3));
+    border-left-width: 6px;
+    box-shadow: 
+        0 4px 15px rgba(102, 126, 234, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Premium Task Items */
+.task-item {
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.task-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 70%;
+    background: linear-gradient(90deg, #667eea, transparent);
+    transition: width 0.3s;
+    border-radius: 0 4px 4px 0;
+}
+
+.task-item:hover::before {
+    width: 4px;
+}
+
+.task-item:hover {
+    background: linear-gradient(90deg, 
+        rgba(102, 126, 234, 0.15),
+        rgba(102, 126, 234, 0.05));
+    border-left-color: #667eea;
+    border-left-width: 4px;
+    padding-left: 20px;
+    box-shadow: inset 0 0 20px rgba(102, 126, 234, 0.1);
+}
+
+.task-item.active {
+    background: linear-gradient(90deg, 
+        rgba(102, 126, 234, 0.25),
+        rgba(102, 126, 234, 0.1));
+    border-left-width: 5px;
+    box-shadow: 
+        inset 0 0 30px rgba(102, 126, 234, 0.2),
+        0 0 15px rgba(102, 126, 234, 0.3);
+}
+
+/* ============================================
+   4. PREMIUM CARDS & CONTENT
+   ============================================ */
+
+.card {
+    background: linear-gradient(135deg, 
+        rgba(26, 26, 46, 0.95),
+        rgba(22, 33, 62, 0.95));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        transparent,
+        #667eea,
+        #764ba2,
+        transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.card:hover::before {
+    opacity: 1;
+}
+
+.card:hover {
+    border-color: rgba(102, 126, 234, 0.4);
+    box-shadow: 
+        0 12px 48px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(102, 126, 234, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Premium Card Header */
+.card-header {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.1),
+        transparent);
+    border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+    position: relative;
+}
+
+.card-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent,
+        #667eea,
+        transparent);
+}
+
+/* ============================================
+   5. ENHANCED BUTTONS
+   ============================================ */
+
+button {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+button:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary {
+    box-shadow: 
+        0 4px 15px rgba(102, 126, 234, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary:hover {
+    box-shadow: 
+        0 8px 30px rgba(102, 126, 234, 0.6),
+        0 0 40px rgba(102, 126, 234, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   6. PREMIUM STAT CARDS
+   ============================================ */
+
+.stat-card {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.15),
+        rgba(118, 75, 162, 0.15));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        circle,
+        rgba(102, 126, 234, 0.1),
+        transparent 70%
+    );
+    animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.stat-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: rgba(102, 126, 234, 0.5);
+    box-shadow: 
+        0 16px 48px rgba(0, 0, 0, 0.3),
+        0 0 60px rgba(102, 126, 234, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.stat-content h3 {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    animation: countUp 0.6s ease-out, glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+    0%, 100% {
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    }
+    50% {
+        text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+    }
+}
+
+/* ============================================
+   7. PREMIUM DATA TABLES
+   ============================================ */
+
+.data-table {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.data-table thead {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.3),
+        rgba(118, 75, 162, 0.3));
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+}
+
+.data-table th {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.data-table th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent,
+        #667eea,
+        transparent);
+}
+
+.data-table tr {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.data-table tr:hover {
+    background: linear-gradient(90deg, 
+        rgba(102, 126, 234, 0.1),
+        rgba(102, 126, 234, 0.05));
+    box-shadow: inset 0 0 20px rgba(102, 126, 234, 0.1);
+    transform: scale(1.005);
+}
+
+/* ============================================
+   8. PREMIUM MODALS
+   ============================================ */
+
+.modal-overlay {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.modal {
+    background: linear-gradient(135deg, 
+        rgba(26, 26, 46, 0.98),
+        rgba(22, 33, 62, 0.98));
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 0 80px rgba(102, 126, 234, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.1),
+        transparent);
+    border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+}
+
+/* ============================================
+   9. PREMIUM SCROLLBAR
+   ============================================ */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(15, 15, 30, 0.5);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.6),
+        rgba(118, 75, 162, 0.6));
+    border-radius: 10px;
+    border: 2px solid rgba(15, 15, 30, 0.3);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, 
+        rgba(102, 126, 234, 0.8),
+        rgba(118, 75, 162, 0.8));
+    box-shadow: 
+        inset 0 0 10px rgba(255, 255, 255, 0.2),
+        0 0 15px rgba(102, 126, 234, 0.5);
+}
+
+/* ============================================
+   10. GRID LAYOUT ENHANCEMENTS
+   ============================================ */
+
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.grid-4 .stat-card {
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.grid-4 .stat-card h4 {
+    font-size: 36px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+}
+
+.grid-4 .stat-card p {
+    font-size: 13px;
+    color: #888;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ============================================
+   11. RESPONSIVE ENHANCEMENTS
+   ============================================ */
+
+@media (max-width: 1024px) {
+    .top-nav-brand h1 {
+        font-size: 18px;
+    }
+    
+    .premium-badge {
+        font-size: 9px;
+        padding: 3px 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .top-nav-brand h1 {
+        font-size: 16px;
+    }
+    
+    .developer-credit {
+        font-size: 9px;
+        bottom: -20px;
+    }
+    
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .premium-badge {
+        display: block;
+        margin: 5px 0 0 0;
+    }
+}
+
+/* ============================================
+   12. ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+/* Focus states for keyboard navigation */
+button:focus-visible,
+.top-nav-item:focus-visible,
+.task-item:focus-visible {
+    outline: 3px solid rgba(102, 126, 234, 0.6);
+    outline-offset: 2px;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .card,
+    .modal,
+    .stat-card {
+        border-width: 2px;
+    }
+    
+    .top-nav-item,
+    button {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ============================================
+   13. PRINT STYLES
+   ============================================ */
+
+@media print {
+    .top-nav,
+    .sidebar-tasks,
+    button,
+    .modal-overlay {
+        display: none;
+    }
+    
+    .card {
+        break-inside: avoid;
+        border: 1px solid #000;
+        box-shadow: none;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+}
+
+/* ============================================
+   END OF PREMIUM STYLES
+   ============================================ */

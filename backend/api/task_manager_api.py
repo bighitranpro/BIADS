@@ -30,6 +30,20 @@ class ChromeSessionToggle(BaseModel):
     account_id: int
 
 
+class TaskCreateRequest(BaseModel):
+    account_id: int
+    task_type: str
+    task_name: str
+    params: Optional[Dict[str, Any]] = None
+
+
+class TaskUpdateStatusRequest(BaseModel):
+    status: str  # pending, processing, completed, failed, cancelled
+    progress: Optional[int] = None
+    error_message: Optional[str] = None
+    result: Optional[str] = None
+
+
 class TaskHistoryResponse(BaseModel):
     id: int
     task_id: str
@@ -59,6 +73,279 @@ class ChromeSessionResponse(BaseModel):
     last_activity: str
     has_proxy: bool
     proxy_ip: Optional[str]
+
+
+# ============================================
+# TASK CRUD ENDPOINTS
+# ============================================
+
+@router.post("/create")
+async def create_task(request: TaskCreateRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Create a new task
+    
+    - Validates account exists
+    - Generates unique task_id
+    - Creates task in pending status
+    - Logs task creation
+    """
+    try:
+        # Validate account exists
+        account = await crud.get_account(db, request.account_id)
+        if not account:
+            raise HTTPException(status_code=404, detail="Account not found")
+        
+        # Generate unique task ID
+        task_id = f"{request.task_type}_{request.account_id}_{int(datetime.now().timestamp())}"
+        
+        # Create task
+        task = await crud.create_task(db, {
+            'task_id': task_id,
+            'account_id': request.account_id,
+            'task_type': request.task_type,
+            'task_name': request.task_name,
+            'params': str(request.params) if request.params else None,
+            'status': 'pending',
+            'progress': 0
+        })
+        
+        # Log activity
+        await crud.create_log(db, {
+            'account_id': request.account_id,
+            'task_id': task_id,
+            'action': 'create_task',
+            'message': f"Created task: {request.task_name}",
+            'level': 'info'
+        })
+        
+        return {
+            "success": True,
+            "message": "Task created successfully",
+            "task_id": task_id,
+            "task": {
+                "id": task.id,
+                "task_id": task.task_id,
+                "account_id": task.account_id,
+                "task_type": task.task_type,
+                "task_name": task.task_name,
+                "status": task.status,
+                "created_at": task.created_at.isoformat()
+            }
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating task: {str(e)}")
+
+
+@router.put("/{task_id}/status")
+async def update_task_status(
+    task_id: str,
+    request: TaskUpdateStatusRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Update task status and progress
+    
+    - Updates task status (pending, processing, completed, failed, cancelled)
+    - Updates progress (0-100)
+    - Sets error_message or result
+    - Logs status change
+    """
+    try:
+        # Get task
+        query = select(Task).filter(Task.task_id == task_id)
+        result = await db.execute(query)
+        task = result.scalar_one_or_none()
+        
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        
+        # Valid statuses
+        valid_statuses = ['pending', 'processing', 'completed', 'failed', 'cancelled']
+        if request.status not in valid_statuses:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
+            )
+        
+        # Update task fields
+        task.status = request.status
+        
+        if request.progress is not None:
+            task.progress = min(100, max(0, request.progress))  # Clamp between 0-100
+        
+        if request.error_message:
+            task.error_message = request.error_message
+        
+        if request.result:
+            task.result = request.result
+        
+        # Set timestamps
+        if request.status == 'processing' and not task.started_at:
+            task.started_at = datetime.now()
+        
+        if request.status in ['completed', 'failed', 'cancelled']:
+            task.completed_at = datetime.now()
+        
+        await db.commit()
+        await db.refresh(task)
+        
+        # Log activity
+        await crud.create_log(db, {
+            'account_id': task.account_id,
+            'task_id': task_id,
+            'action': 'update_task_status',
+            'message': f"Task status updated to: {request.status}",
+            'level': 'success' if request.status == 'completed' else 'info'
+        })
+        
+        return {
+            "success": True,
+            "message": f"Task status updated to: {request.status}",
+            "task": {
+                "id": task.id,
+                "task_id": task.task_id,
+                "status": task.status,
+                "progress": task.progress,
+                "started_at": task.started_at.isoformat() if task.started_at else None,
+                "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+                "error_message": task.error_message,
+                "result": task.result
+            }
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating task status: {str(e)}")
+
+
+@router.post("/{task_id}/cancel")
+async def cancel_task(task_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Cancel a pending or processing task
+    
+    - Only cancels tasks that are pending or processing
+    - Sets status to cancelled
+    - Logs cancellation
+    """
+    try:
+        # Get task
+        query = select(Task).filter(Task.task_id == task_id)
+        result = await db.execute(query)
+        task = result.scalar_one_or_none()
+        
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        
+        # Check if task can be cancelled
+        if task.status not in ['pending', 'processing']:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot cancel task with status: {task.status}. Only pending or processing tasks can be cancelled."
+            )
+        
+        # Cancel task
+        task.status = 'cancelled'
+        task.completed_at = datetime.now()
+        task.error_message = "Task cancelled by user"
+        
+        await db.commit()
+        await db.refresh(task)
+        
+        # Log activity
+        await crud.create_log(db, {
+            'account_id': task.account_id,
+            'task_id': task_id,
+            'action': 'cancel_task',
+            'message': f"Task cancelled: {task.task_name}",
+            'level': 'warning'
+        })
+        
+        return {
+            "success": True,
+            "message": "Task cancelled successfully",
+            "task": {
+                "id": task.id,
+                "task_id": task.task_id,
+                "status": task.status,
+                "completed_at": task.completed_at.isoformat()
+            }
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error cancelling task: {str(e)}")
+
+
+@router.post("/{task_id}/retry")
+async def retry_task(task_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    Retry a failed task
+    
+    - Only retries failed tasks
+    - Resets status to pending
+    - Clears error_message
+    - Resets progress to 0
+    - Logs retry action
+    """
+    try:
+        # Get task
+        query = select(Task).filter(Task.task_id == task_id)
+        result = await db.execute(query)
+        task = result.scalar_one_or_none()
+        
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        
+        # Check if task can be retried
+        if task.status != 'failed':
+            raise HTTPException(
+                status_code=400,
+                detail=f"Cannot retry task with status: {task.status}. Only failed tasks can be retried."
+            )
+        
+        # Reset task for retry
+        task.status = 'pending'
+        task.progress = 0
+        task.error_message = None
+        task.result = None
+        task.started_at = None
+        task.completed_at = None
+        
+        await db.commit()
+        await db.refresh(task)
+        
+        # Log activity
+        await crud.create_log(db, {
+            'account_id': task.account_id,
+            'task_id': task_id,
+            'action': 'retry_task',
+            'message': f"Task retry initiated: {task.task_name}",
+            'level': 'info'
+        })
+        
+        return {
+            "success": True,
+            "message": "Task reset for retry",
+            "task": {
+                "id": task.id,
+                "task_id": task.task_id,
+                "status": task.status,
+                "progress": task.progress
+            }
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error retrying task: {str(e)}")
 
 
 # ============================================
