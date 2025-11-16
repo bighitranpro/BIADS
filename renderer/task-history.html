@@ -587,12 +587,44 @@
                     // Update running tasks
                     this.runningTasks = newRunningTasks;
                     
+                    // Render running tasks banner
+                    this.renderRunningTasksBanner();
+                    
                     // Update progress for running tasks in table
                     this.updateRunningTasksInTable();
                 }
             } catch (error) {
                 console.error('Error polling running tasks:', error);
             }
+        },
+        
+        renderRunningTasksBanner() {
+            const banner = document.getElementById('runningTasksBanner');
+            const countEl = document.getElementById('runningTaskCount');
+            const listEl = document.getElementById('runningTasksList');
+            
+            if (this.runningTasks.length === 0) {
+                banner.classList.remove('has-tasks');
+                return;
+            }
+            
+            banner.classList.add('has-tasks');
+            countEl.textContent = this.runningTasks.length;
+            
+            listEl.innerHTML = this.runningTasks.map(task => `
+                <div class="running-task-item">
+                    <div class="running-task-name">${task.task_name || task.task_type}</div>
+                    <div class="running-task-account">
+                        ${task.account ? `👤 ${task.account.name || task.account.uid}` : 'N/A'}
+                    </div>
+                    <div class="running-task-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${task.progress}%"></div>
+                        </div>
+                        <span class="progress-text">${task.progress}%</span>
+                    </div>
+                </div>
+            `).join('');
         },
         
         updateRunningTasksInTable() {
