@@ -441,56 +441,84 @@ const BiAds = {
 
     // Check account status (live/die)
     checkAccountStatus: async function(accountId) {
+        const loadingToast = this.showLoading('Đang kiểm tra...', 'Khởi động Chrome và đăng nhập tài khoản');
+        
         try {
             this.log('info', `🔍 Đang kiểm tra tài khoản ID ${accountId}...`);
             
-            const result = await apiClient.checkAccountStatus(accountId);
+            // Call new Chrome-based check API
+            const response = await fetch('http://localhost:8000/api/accounts/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ account_id: accountId })
+            });
             
-            const status = result.is_live ? '✅ LIVE' : '❌ DIE';
-            this.log('success', `${status} - ${result.reason}`);
+            const result = await response.json();
             
-            // Reload accounts to show updated status
-            await this.loadAccountsFromBackend();
+            this.hideToast(loadingToast);
+            
+            if (result.success) {
+                this.log('success', `✅ ${result.message}`);
+                this.showToast('success', 'Đã bắt đầu kiểm tra', 
+                    'Tác vụ đang chạy trong background. Xem kết quả trong Lịch sử tác vụ');
+                
+                // Auto-refresh after 5 seconds
+                setTimeout(() => {
+                    this.loadAccountsFromBackend();
+                }, 5000);
+            } else {
+                throw new Error(result.message || 'Check failed');
+            }
             
         } catch (error) {
+            this.hideToast(loadingToast);
             this.log('error', `❌ Lỗi kiểm tra: ${error.message}`);
+            this.showToast('error', 'Lỗi kiểm tra tài khoản', error.message);
         }
     },
 
     // Check all accounts status
     checkAllAccountsStatus: async function() {
-        // Show confirmation toast instead of blocking confirm dialog
+        // Show confirmation toast
         const confirmToast = this.showToast('warning', 'Xác nhận kiểm tra tất cả?', 
-            'Quá trình này có thể mất vài phút. Bấm vào đây để xác nhận.', 0);
+            `Sẽ mở ${this.accounts.length} Chrome sessions. Bấm vào đây để xác nhận.`, 0);
         
-        // Make toast clickable for confirmation
         confirmToast.style.cursor = 'pointer';
         confirmToast.onclick = async () => {
             this.hideToast(confirmToast);
             
-            const loadingToast = this.showLoading('Đang kiểm tra...', 'Kiểm tra tất cả tài khoản, vui lòng đợi');
-            
             try {
-                this.log('info', '🔄 Đang kiểm tra tất cả tài khoản...');
+                this.log('info', '🔄 Đang bắt đầu kiểm tra tất cả tài khoản...');
                 
-                const result = await apiClient.checkAccountsStatusBulk();
+                const account_ids = this.accounts.map(acc => acc.id);
                 
-                this.hideToast(loadingToast);
-                this.log('success', `✅ Hoàn thành: ${result.live_count} live, ${result.die_count} die`);
-                this.showToast('success', 'Kiểm tra hoàn tất', 
-                    `${result.live_count} live, ${result.die_count} die`);
+                const response = await fetch('http://localhost:8000/api/accounts/check-multiple', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ account_ids: account_ids })
+                });
                 
-                // Reload accounts
-                await this.loadAccountsFromBackend();
+                const result = await response.json();
+                
+                if (result.success) {
+                    this.log('success', `✅ ${result.message}`);
+                    this.showToast('success', 'Đã bắt đầu kiểm tra', 
+                        `${result.account_count} tài khoản đang được kiểm tra. Xem tiến độ trong Lịch sử tác vụ`);
+                    
+                    // Auto-refresh after 10 seconds
+                    setTimeout(() => {
+                        this.loadAccountsFromBackend();
+                    }, 10000);
+                } else {
+                    throw new Error(result.message || 'Check failed');
+                }
                 
             } catch (error) {
-                this.hideToast(loadingToast);
                 this.log('error', `❌ Lỗi: ${error.message}`);
                 this.showToast('error', 'Lỗi kiểm tra tài khoản', error.message);
             }
         };
         
-        // Auto hide confirmation after 10 seconds
         setTimeout(() => {
             if (confirmToast.parentElement) {
                 this.hideToast(confirmToast);
@@ -1362,31 +1390,6 @@ const BiAds = {
             content.innerHTML = html;
         } catch (error) {
             content.innerHTML = '<div class="info-box"><h4>❓ Help</h4><p>Loading help...</p></div>';
-        }
-    },
-    
-    // Load Test API Page
-    loadTestAPIPage: async function() {
-        const content = document.getElementById('contentBody');
-        const title = document.getElementById('contentTitle');
-        title.textContent = '🧪 Test API & Debug Tool';
-        
-        try {
-            const response = await fetch('test-api-content.html');
-            const html = await response.text();
-            content.innerHTML = html;
-            
-            // Execute any scripts in the loaded content
-            const scripts = content.querySelectorAll('script');
-            scripts.forEach(script => {
-                const newScript = document.createElement('script');
-                newScript.textContent = script.textContent;
-                document.body.appendChild(newScript);
-                document.body.removeChild(newScript);
-            });
-        } catch (error) {
-            console.error('Error loading test API page:', error);
-            content.innerHTML = '<div class="info-box"><h4>🧪 Test API</h4><p>Đang tải công cụ test...</p></div>';
         }
     },
     
