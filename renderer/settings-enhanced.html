@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài đặt hệ thống - Bi Ads Multi Tool PRO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .setting-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .setting-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .setting-card h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .checkbox-group:hover {
+            background: #f0f0f0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .info-box h4 {
+            color: #1976d2;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #555;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+
+        .info-box code {
+            background: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            color: #d32f2f;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #4caf50;
+        }
+
+        .status-dot.disconnected {
+            background: #f44336;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+            align-items: center;
+            gap: 15px;
+            z-index: 1000;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+
+        .toast.show {
+            display: flex;
+        }
+
+        .toast.success { border-left: 4px solid #4caf50; }
+        .toast.error { border-left: 4px solid #f44336; }
+        .toast.warning { border-left: 4px solid #ff9800; }
+        .toast.info { border-left: 4px solid #2196f3; }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span>⚙️</span>
+                Cài đặt hệ thống
+            </h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="settingsApp.resetSettings()">
+                    🔄 Khôi phục mặc định
+                </button>
+                <button class="btn btn-primary" onclick="settingsApp.saveSettings()">
+                    💾 Lưu cài đặt
+                </button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Connection Status -->
+            <div class="status-indicator">
+                <div class="status-dot connected" id="statusDot"></div>
+                <span id="statusText">Đang kết nối tới backend...</span>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="settingsApp.switchTab('general')">
+                    📋 Tổng quan
+                </button>
+                <button class="tab" onclick="settingsApp.switchTab('database')">
+                    💾 Database
+                </button>
+                <button class="tab" onclick="settingsApp.switchTab('facebook')">
+                    📘 Facebook API
+                </button>
+                <button class="tab" onclick="settingsApp.switchTab('telegram')">
+                    📱 Telegram Bot
+                </button>
+                <button class="tab" onclick="settingsApp.switchTab('tasks')">
+                    ⚡ Tác vụ
+                </button>
+                <button class="tab" onclick="settingsApp.switchTab('proxy')">
+                    🌐 Proxy
+                </button>
+                <button class="tab" onclick="settingsApp.switchTab('advanced')">
+                    🔧 Nâng cao
+                </button>
+            </div>
+
+            <!-- Tab Contents -->
+            
+            <!-- General Tab -->
+            <div class="tab-content active" id="tab-general">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <h3>🎨 Giao diện</h3>
+                        <div class="form-group">
+                            <label>Ngôn ngữ</label>
+                            <select id="language">
+                                <option value="vi">Tiếng Việt</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Theme</label>
+                            <select id="theme">
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                                <option value="auto">Auto</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3>📊 Thông tin hệ thống</h3>
+                        <div class="form-group">
+                            <label>Tên ứng dụng</label>
+                            <input type="text" id="appName" value="Bi Ads Multi Tool PRO" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Phiên bản</label>
+                            <input type="text" id="appVersion" value="3.0.0" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Tab -->
+            <div class="tab-content" id="tab-database">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <h3>💾 Cấu hình Database</h3>
+                        <div class="form-group">
+                            <label>Database Type</label>
+                            <select id="databaseType">
+                                <option value="sqlite">SQLite (Local)</option>
+                                <option value="postgresql">PostgreSQL (Production)</option>
+                            </select>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="autoBackup">
+                            <label>Tự động sao lưu database hàng ngày</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Facebook Tab -->
+            <div class="tab-content" id="tab-facebook">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <h3>📘 Facebook API Configuration</h3>
+                        <div class="form-group">
+                            <label>Facebook App ID</label>
+                            <input type="text" id="facebookAppId" placeholder="Nhập App ID">
+                        </div>
+                        <div class="form-group">
+                            <label>Facebook App Secret</label>
+                            <input type="password" id="facebookAppSecret" placeholder="Nhập App Secret">
+                        </div>
+                        <div class="form-group">
+                            <label>API Version</label>
+                            <select id="facebookApiVersion">
+                                <option value="v18.0">v18.0 (Latest)</option>
+                                <option value="v17.0">v17.0</option>
+                                <option value="v16.0">v16.0</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3>🔗 Webhook Configuration</h3>
+                        <div class="form-group">
+                            <label>Webhook Verify Token</label>
+                            <input type="text" id="webhookVerifyToken" placeholder="Nhập verify token">
+                        </div>
+                        <div class="info-box">
+                            <h4>📌 Hướng dẫn cấu hình</h4>
+                            <p>1. Truy cập <a href="https://developers.facebook.com" target="_blank">Facebook Developers</a></p>
+                            <p>2. Chọn app → Webhooks → Edit Subscription</p>
+                            <p>3. Callback URL: <code>http://your-server.com/webhook</code></p>
+                            <p>4. Subscribe to: feed, comments, reactions, mention</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Telegram Tab -->
+            <div class="tab-content" id="tab-telegram">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <h3>📱 Telegram Bot Configuration</h3>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="telegramEnabled" checked>
+                            <label>Bật thông báo Telegram</label>
+                        </div>
+                        <div class="form-group">
+                            <label>Bot Token</label>
+                            <input type="password" id="telegramBotToken" placeholder="1234567890:ABCdef...">
+                        </div>
+                        <div class="form-group">
+                            <label>Chat ID</label>
+                            <input type="text" id="telegramChatId" placeholder="123456789">
+                        </div>
+                        <button class="btn btn-secondary" onclick="settingsApp.testTelegram()" style="width: 100%; margin-top: 10px;">
+                            🧪 Test thông báo
+                        </button>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3>🔔 Cài đặt thông báo</h3>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="notifyTaskComplete" checked>
+                            <label>Thông báo khi task hoàn thành</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="notifyTaskFailed" checked>
+                            <label>Thông báo khi task thất bại</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="notifyError" checked>
+                            <label>Thông báo lỗi hệ thống</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="notifyWebhook">
+                            <label>Thông báo sự kiện Facebook</label>
+                        </div>
+                    </div>
+
+                    <div class="setting-card">
+                        <div class="info-box">
+                            <h4>📌 Hướng dẫn lấy Bot Token và Chat ID</h4>
+                            <p>1. Tạo bot: Message @BotFather trên Telegram → /newbot</p>
+                            <p>2. Copy Bot Token được cung cấp</p>
+                            <p>3. Lấy Chat ID: Message @userinfobot → Copy ID của bạn</p>
+                            <p>4. Nhắn tin cho bot của bạn để kích hoạt</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tasks Tab -->
+            <div class="tab-content" id="tab-tasks">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <h3>⚡ Cấu hình tác vụ</h3>
+                        <div class="form-group">
+                            <label>Delay mặc định (giây)</label>
+                            <input type="number" id="defaultDelay" value="10" min="1" max="60">
+                        </div>
+                        <div class="form-group">
+                            <label>Số lần retry tối đa</label>
+                            <input type="number" id="maxRetries" value="3" min="1" max="10">
+                        </div>
+                        <div class="form-group">
+                            <label>Timeout (giây)</label>
+                            <input type="number" id="taskTimeout" value="300" min="30" max="3600">
+                        </div>
+                        <div class="form-group">
+                            <label>Số task chạy đồng thời</label>
+                            <input type="number" id="maxConcurrent" value="5" min="1" max="20">
+                        </div>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3>🔄 Automation</h3>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="autoStartTasks">
+                            <label>Tự động bắt đầu tasks</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="autoRestartFailed" checked>
+                            <label>Tự động restart tasks thất bại</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="saveLogsToFile" checked>
+                            <label>Lưu logs vào file</label>
+                        </div>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3>⏱️ Rate Limiting</h3>
+                        <div class="form-group">
+                            <label>Max actions mỗi giờ</label>
+                            <input type="number" id="maxActionsPerHour" value="100" min="10" max="1000">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proxy Tab -->
+            <div class="tab-content" id="tab-proxy">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <h3>🌐 Cấu hình Proxy</h3>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="autoAssignProxy" checked>
+                            <label>Tự động gán proxy cho tài khoản mới</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="rotateProxyOnError" checked>
+                            <label>Rotate proxy khi có lỗi</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="checkProxyBeforeUse" checked>
+                            <label>Kiểm tra proxy trước khi sử dụng</label>
+                        </div>
+                        <div class="form-group">
+                            <label>Proxy timeout (giây)</label>
+                            <input type="number" id="proxyTimeout" value="30" min="5" max="300">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Tab -->
+            <div class="tab-content" id="tab-advanced">
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <h3>🔧 Cài đặt nâng cao</h3>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="debugMode">
+                            <label>Debug mode (chi tiết log)</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="verboseLogging">
+                            <label>Verbose logging</label>
+                        </div>
+                        <div class="form-group">
+                            <label>Log level</label>
+                            <select id="logLevel">
+                                <option value="DEBUG">DEBUG</option>
+                                <option value="INFO" selected>INFO</option>
+                                <option value="WARNING">WARNING</option>
+                                <option value="ERROR">ERROR</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3>⚡ Performance</h3>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="cacheEnabled" checked>
+                            <label>Bật cache</label>
+                        </div>
+                        <div class="form-group">
+                            <label>Cache TTL (giây)</label>
+                            <input type="number" id="cacheTtl" value="300" min="60" max="3600">
+                        </div>
+                        <div class="form-group">
+                            <label>Batch size</label>
+                            <input type="number" id="batchSize" value="10" min="1" max="100">
+                        </div>
+                    </div>
+
+                    <div class="setting-card">
+                        <h3>🔐 Security</h3>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enable2fa">
+                            <label>Bật 2FA</label>
+                        </div>
+                        <div class="form-group">
+                            <label>Session timeout (giây)</label>
+                            <input type="number" id="sessionTimeout" value="3600" min="300" max="86400">
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="autoLogout">
+                            <label>Tự động đăng xuất khi idle</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span id="toastIcon"></span>
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        const settingsApp = {
+            currentTab: 'general',
+
+            async init() {
+                await this.checkBackendStatus();
+                await this.loadSettings();
+            },
+
+            async checkBackendStatus() {
+                try {
+                    const response = await fetch(`${API_URL}/health`);
+                    if (response.ok) {
+                        document.getElementById('statusDot').className = 'status-dot connected';
+                        document.getElementById('statusText').textContent = 'Kết nối backend thành công ✅';
+                    } else {
+                        throw new Error('Backend not responding');
+                    }
+                } catch (error) {
+                    document.getElementById('statusDot').className = 'status-dot disconnected';
+                    document.getElementById('statusText').textContent = 'Không thể kết nối backend ❌';
+                }
+            },
+
+            async loadSettings() {
+                try {
+                    const response = await fetch(`${API_URL}/api/settings/`);
+                    if (!response.ok) throw new Error('Failed to load settings');
+                    
+                    const data = await response.json();
+                    const settings = data.settings;
+                    
+                    // General
+                    document.getElementById('language').value = settings.language || 'vi';
+                    document.getElementById('theme').value = settings.theme || 'dark';
+                    document.getElementById('appName').value = settings.app_name || 'Bi Ads Multi Tool PRO';
+                    document.getElementById('appVersion').value = settings.app_version || '3.0.0';
+
+                    // Database
+                    document.getElementById('autoBackup').checked = settings.auto_backup || false;
+
+                    // Facebook
+                    document.getElementById('facebookAppId').value = settings.facebook_app_id || '';
+                    document.getElementById('facebookAppSecret').value = settings.facebook_app_secret || '';
+                    document.getElementById('facebookApiVersion').value = settings.facebook_api_version || 'v18.0';
+                    document.getElementById('webhookVerifyToken').value = settings.webhook_verify_token || '';
+
+                    // Telegram
+                    document.getElementById('telegramEnabled').checked = settings.telegram_enabled || false;
+                    document.getElementById('telegramBotToken').value = settings.telegram_bot_token || '';
+                    document.getElementById('telegramChatId').value = settings.telegram_chat_id || '';
+                    document.getElementById('notifyTaskComplete').checked = settings.telegram_notify_on_success || true;
+                    document.getElementById('notifyTaskFailed').checked = settings.telegram_notify_on_error || true;
+                    document.getElementById('notifyError').checked = settings.telegram_notify_on_error || true;
+
+                    // Tasks
+                    document.getElementById('defaultDelay').value = settings.default_delay || 10;
+                    document.getElementById('maxRetries').value = settings.default_retry || 3;
+                    document.getElementById('taskTimeout').value = settings.default_timeout || 300;
+                    document.getElementById('maxConcurrent').value = settings.max_concurrent_tasks || 5;
+                    document.getElementById('autoStartTasks').checked = settings.auto_start_tasks || false;
+                    document.getElementById('autoRestartFailed').checked = settings.auto_restart_failed_tasks || true;
+                    document.getElementById('saveLogsToFile').checked = settings.save_logs_to_file || true;
+                    document.getElementById('maxActionsPerHour').value = settings.api_rate_limit || 100;
+
+                    // Proxy
+                    document.getElementById('autoAssignProxy').checked = settings.auto_assign_proxy || true;
+                    document.getElementById('rotateProxyOnError').checked = settings.rotate_proxy_on_error || true;
+                    document.getElementById('checkProxyBeforeUse').checked = settings.check_proxy_before_use || true;
+                    document.getElementById('proxyTimeout').value = settings.proxy_timeout || 30;
+
+                    // Advanced
+                    document.getElementById('debugMode').checked = settings.debug_mode || false;
+                    document.getElementById('verboseLogging').checked = settings.verbose_logging || false;
+                    document.getElementById('logLevel').value = settings.log_level || 'INFO';
+                    document.getElementById('cacheEnabled').checked = settings.cache_enabled || true;
+                    document.getElementById('cacheTtl').value = settings.cache_ttl || 300;
+                    document.getElementById('batchSize').value = settings.batch_size || 10;
+                    document.getElementById('enable2fa').checked = settings.enable_2fa || false;
+                    document.getElementById('sessionTimeout').value = settings.session_timeout || 3600;
+                    document.getElementById('autoLogout').checked = settings.auto_logout || false;
+
+                    this.showToast('success', 'Đã tải cài đặt thành công!');
+                } catch (error) {
+                    console.error('Error loading settings:', error);
+                    this.showToast('error', 'Lỗi tải cài đặt: ' + error.message);
+                }
+            },
+
+            async saveSettings() {
+                try {
+                    const settings = {
+                        // General
+                        app_name: 'Bi Ads Multi Tool PRO',
+                        app_version: '3.0.0',
+                        language: document.getElementById('language').value,
+                        theme: document.getElementById('theme').value,
+
+                        // Database
+                        auto_backup: document.getElementById('autoBackup').checked,
+
+                        // Facebook
+                        facebook_app_id: document.getElementById('facebookAppId').value,
+                        facebook_app_secret: document.getElementById('facebookAppSecret').value,
+                        facebook_api_version: document.getElementById('facebookApiVersion').value,
+                        webhook_verify_token: document.getElementById('webhookVerifyToken').value,
+
+                        // Telegram
+                        telegram_enabled: document.getElementById('telegramEnabled').checked,
+                        telegram_bot_token: document.getElementById('telegramBotToken').value,
+                        telegram_chat_id: document.getElementById('telegramChatId').value,
+                        telegram_notify_on_success: document.getElementById('notifyTaskComplete').checked,
+                        telegram_notify_on_error: document.getElementById('notifyTaskFailed').checked,
+                        telegram_notify_on_start: false,
+
+                        // Tasks
+                        default_delay: parseInt(document.getElementById('defaultDelay').value),
+                        default_retry: parseInt(document.getElementById('maxRetries').value),
+                        default_timeout: parseInt(document.getElementById('taskTimeout').value),
+                        max_concurrent_tasks: parseInt(document.getElementById('maxConcurrent').value),
+                        auto_start_tasks: document.getElementById('autoStartTasks').checked,
+                        auto_restart_failed_tasks: document.getElementById('autoRestartFailed').checked,
+                        save_logs_to_file: document.getElementById('saveLogsToFile').checked,
+                        max_log_entries: 1000,
+                        api_rate_limit: parseInt(document.getElementById('maxActionsPerHour').value),
+
+                        // Proxy
+                        auto_assign_proxy: document.getElementById('autoAssignProxy').checked,
+                        rotate_proxy_on_error: document.getElementById('rotateProxyOnError').checked,
+                        check_proxy_before_use: document.getElementById('checkProxyBeforeUse').checked,
+                        proxy_timeout: parseInt(document.getElementById('proxyTimeout').value),
+
+                        // Security
+                        enable_2fa: document.getElementById('enable2fa').checked,
+                        session_timeout: parseInt(document.getElementById('sessionTimeout').value),
+                        auto_logout: document.getElementById('autoLogout').checked,
+
+                        // Performance
+                        cache_enabled: document.getElementById('cacheEnabled').checked,
+                        cache_ttl: parseInt(document.getElementById('cacheTtl').value),
+                        batch_size: parseInt(document.getElementById('batchSize').value),
+
+                        // Advanced
+                        debug_mode: document.getElementById('debugMode').checked,
+                        verbose_logging: document.getElementById('verboseLogging').checked,
+                        log_level: document.getElementById('logLevel').value
+                    };
+
+                    const response = await fetch(`${API_URL}/api/settings/`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(settings)
+                    });
+
+                    if (!response.ok) throw new Error('Failed to save settings');
+                    
+                    const result = await response.json();
+                    this.showToast('success', '✅ Đã lưu cài đặt thành công!');
+                    
+                } catch (error) {
+                    console.error('Error saving settings:', error);
+                    this.showToast('error', '❌ Lỗi lưu cài đặt: ' + error.message);
+                }
+            },
+
+            async testTelegram() {
+                try {
+                    const response = await fetch(`${API_URL}/api/settings/telegram/test`, {
+                        method: 'POST'
+                    });
+
+                    if (!response.ok) throw new Error('Failed to test Telegram');
+                    
+                    const result = await response.json();
+                    this.showToast('success', '🧪 Đã gửi tin nhắn test! Kiểm tra Telegram của bạn.');
+                    
+                } catch (error) {
+                    console.error('Error testing Telegram:', error);
+                    this.showToast('error', '❌ Lỗi test Telegram: ' + error.message);
+                }
+            },
+
+            async resetSettings() {
+                if (!confirm('Bạn có chắc muốn khôi phục cài đặt mặc định? Tất cả thay đổi sẽ bị mất.')) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_URL}/api/settings/reset`, {
+                        method: 'POST'
+                    });
+
+                    if (!response.ok) throw new Error('Failed to reset settings');
+                    
+                    await this.loadSettings();
+                    this.showToast('info', '🔄 Đã khôi phục cài đặt mặc định');
+                    
+                } catch (error) {
+                    console.error('Error resetting settings:', error);
+                    this.showToast('error', '❌ Lỗi reset: ' + error.message);
+                }
+            },
+
+            switchTab(tabName) {
+                // Remove active class from all tabs and contents
+                document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+                // Add active class to selected tab and content
+                event.target.classList.add('active');
+                document.getElementById(`tab-${tabName}`).classList.add('active');
+
+                this.currentTab = tabName;
+            },
+
+            showToast(type, message) {
+                const toast = document.getElementById('toast');
+                const icon = document.getElementById('toastIcon');
+                const text = document.getElementById('toastMessage');
+
+                // Set icon based on type
+                const icons = {
+                    success: '✅',
+                    error: '❌',
+                    warning: '⚠️',
+                    info: 'ℹ️'
+                };
+
+                icon.textContent = icons[type] || 'ℹ️';
+                text.textContent = message;
+                
+                toast.className = `toast ${type} show`;
+
+                // Auto hide after 3 seconds
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        };
+
+        // Initialize app on load
+        window.addEventListener('DOMContentLoaded', () => {
+            settingsApp.init();
+        });
+    </script>
+</body>
+</html>
