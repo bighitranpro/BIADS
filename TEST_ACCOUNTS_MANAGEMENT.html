@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Quản Lý Tài Khoản - Bi Ads</title>
+    <link rel="stylesheet" href="renderer/styles.css">
+</head>
+<body style="padding: 20px;">
+    <div class="card">
+        <div class="card-header">
+            🧪 Test Quản Lý Tài Khoản
+            <button class="btn-primary" onclick="testAll()" style="float: right;">
+                ▶️ Chạy tất cả test
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="testResults"></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">📋 Nhật Ký Hoạt Động</div>
+        <div class="card-body">
+            <div class="console" id="activityLog" style="height: 300px;">
+                <!-- Log will appear here -->
+            </div>
+            <button class="btn-secondary" onclick="clearLog()" style="margin-top: 10px;">
+                🗑️ Xóa log
+            </button>
+        </div>
+    </div>
+
+    <script src="renderer/api-client.js"></script>
+    <script>
+        // Logging function
+        function log(level, message) {
+            const logDiv = document.getElementById('activityLog');
+            if (!logDiv) return;
+            
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            
+            const levelText = {
+                'info': '[THÔNG TIN]',
+                'success': '[THÀNH CÔNG]',
+                'error': '[LỖI]',
+                'warning': '[CẢNH BÁO]'
+            };
+            
+            line.innerHTML = `
+                <span class="console-timestamp">${new Date().toLocaleTimeString('vi-VN')}</span>
+                <span class="console-level ${level}">${levelText[level]}</span>
+                <span class="console-message">${message}</span>
+            `;
+            
+            logDiv.appendChild(line);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            const logDiv = document.getElementById('activityLog');
+            if (logDiv) {
+                logDiv.innerHTML = '';
+                log('info', 'Đã xóa log');
+            }
+        }
+
+        function addResult(testName, success, details) {
+            const results = document.getElementById('testResults');
+            const result = document.createElement('div');
+            result.className = 'info-box';
+            result.style.borderLeft = success ? '4px solid #38ef7d' : '4px solid #f45c43';
+            result.innerHTML = `
+                <h4>${success ? '✅' : '❌'} ${testName}</h4>
+                <p>${details}</p>
+            `;
+            results.appendChild(result);
+        }
+
+        async function testBackendConnection() {
+            log('info', '🔍 Test 1: Kiểm tra kết nối backend...');
+            try {
+                const health = await apiClient.healthCheck();
+                log('success', `✅ Backend online: ${health.status} - ${health.version}`);
+                addResult('Backend Connection', true, `Status: ${health.status}, Version: ${health.version}, Database: ${health.database}`);
+                return true;
+            } catch (error) {
+                log('error', `❌ Không thể kết nối backend: ${error.message}`);
+                addResult('Backend Connection', false, error.message);
+                return false;
+            }
+        }
+
+        async function testLoadAccounts() {
+            log('info', '🔍 Test 2: Tải danh sách tài khoản...');
+            try {
+                const accounts = await apiClient.getAccounts();
+                log('success', `✅ Đã tải ${accounts.length} tài khoản`);
+                addResult('Load Accounts', true, `Tải được ${accounts.length} tài khoản từ database`);
+                return accounts;
+            } catch (error) {
+                log('error', `❌ Lỗi tải tài khoản: ${error.message}`);
+                addResult('Load Accounts', false, error.message);
+                return [];
+            }
+        }
+
+        async function testLoadProxies() {
+            log('info', '🔍 Test 3: Tải danh sách proxy...');
+            try {
+                const proxies = await apiClient.getProxies();
+                log('success', `✅ Đã tải ${proxies.length} proxy`);
+                addResult('Load Proxies', true, `Tải được ${proxies.length} proxy từ database`);
+                return proxies;
+            } catch (error) {
+                log('error', `❌ Lỗi tải proxy: ${error.message}`);
+                addResult('Load Proxies', false, error.message);
+                return [];
+            }
+        }
+
+        async function testCheckAccountStatus(accounts) {
+            if (accounts.length === 0) {
+                log('warning', '⚠️ Test 4: Bỏ qua - Không có tài khoản để test');
+                return;
+            }
+
+            log('info', `🔍 Test 4: Kiểm tra trạng thái tài khoản ID ${accounts[0].id}...`);
+            try {
+                const result = await apiClient.checkAccountStatus(accounts[0].id);
+                const status = result.is_live ? '✅ LIVE' : '❌ DIE';
+                log('success', `${status} - ${result.reason}`);
+                addResult('Check Account Status', true, `Tài khoản ${accounts[0].uid}: ${status} - ${result.reason}`);
+            } catch (error) {
+                log('error', `❌ Lỗi kiểm tra: ${error.message}`);
+                addResult('Check Account Status', false, error.message);
+            }
+        }
+
+        async function testAssignProxy(accounts, proxies) {
+            if (accounts.length === 0 || proxies.length === 0) {
+                log('warning', '⚠️ Test 5: Bỏ qua - Không có tài khoản hoặc proxy để test');
+                return;
+            }
+
+            log('info', `🔍 Test 5: Gán proxy ${proxies[0].id} cho tài khoản ${accounts[0].id}...`);
+            try {
+                const result = await apiClient.assignProxyToAccount(accounts[0].id, proxies[0].id);
+                log('success', `✅ ${result.message}`);
+                addResult('Assign Proxy', true, `Đã gán proxy ${proxies[0].ip}:${proxies[0].port} cho tài khoản ${accounts[0].uid}`);
+                
+                // Verify
+                log('info', '🔍 Kiểm tra lại tài khoản sau khi gán...');
+                const account = await apiClient.getAccount(accounts[0].id);
+                if (account.proxy_id === proxies[0].id) {
+                    log('success', `✅ Xác nhận: Proxy đã được gán thành công`);
+                } else {
+                    log('warning', `⚠️ Proxy ID không khớp: ${account.proxy_id} vs ${proxies[0].id}`);
+                }
+            } catch (error) {
+                log('error', `❌ Lỗi gán proxy: ${error.message}`);
+                addResult('Assign Proxy', false, error.message);
+            }
+        }
+
+        async function testUnassignProxy(accounts) {
+            if (accounts.length === 0) {
+                log('warning', '⚠️ Test 6: Bỏ qua - Không có tài khoản để test');
+                return;
+            }
+
+            log('info', `🔍 Test 6: Gỡ proxy khỏi tài khoản ${accounts[0].id}...`);
+            try {
+                const result = await apiClient.assignProxyToAccount(accounts[0].id, null);
+                log('success', `✅ ${result.message}`);
+                addResult('Unassign Proxy', true, `Đã gỡ proxy khỏi tài khoản ${accounts[0].uid}`);
+            } catch (error) {
+                log('error', `❌ Lỗi gỡ proxy: ${error.message}`);
+                addResult('Unassign Proxy', false, error.message);
+            }
+        }
+
+        async function testAll() {
+            document.getElementById('testResults').innerHTML = '';
+            clearLog();
+            
+            log('info', '🚀 Bắt đầu chạy test suite...');
+            log('info', '═══════════════════════════════════════');
+            
+            // Test 1: Backend connection
+            const backendOk = await testBackendConnection();
+            if (!backendOk) {
+                log('error', '❌ Backend không hoạt động. Dừng test.');
+                return;
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test 2: Load accounts
+            const accounts = await testLoadAccounts();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test 3: Load proxies
+            const proxies = await testLoadProxies();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test 4: Check status
+            await testCheckAccountStatus(accounts);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test 5: Assign proxy
+            await testAssignProxy(accounts, proxies);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test 6: Unassign proxy
+            await testUnassignProxy(accounts);
+            
+            log('info', '═══════════════════════════════════════');
+            log('success', '🎉 Hoàn thành tất cả test!');
+        }
+
+        // Auto-run on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('info', 'Test suite đã sẵn sàng. Nhấn "Chạy tất cả test" để bắt đầu.');
+        });
+    </script>
+</body>
+</html>
