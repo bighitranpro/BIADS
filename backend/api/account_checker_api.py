@@ -14,6 +14,7 @@ from core.database import get_db, Task
 from core import crud
 from services.chrome_manager import chrome_manager
 from services.facebook_automator import FacebookAutomator
+from services.activity_logger import log_account_check, log_chrome_session
 
 router = APIRouter(prefix="/api/accounts", tags=["account-checker"])
 
@@ -76,6 +77,9 @@ async def check_account_task(account_id: int, db: AsyncSession):
             headless=True
         )
         
+        # Log Chrome session creation
+        await log_chrome_session(db, account.id, "create", headless=True)
+        
         # Update task progress
         task.progress = 30
         await db.commit()
@@ -107,6 +111,14 @@ async def check_account_task(account_id: int, db: AsyncSession):
         task.result = str(result)
         
         await db.commit()
+        
+        # Log account check result
+        await log_account_check(
+            db,
+            account_id=account.id,
+            status=result['status'],
+            task_id=task_id
+        )
         
         # Log
         await crud.create_log(

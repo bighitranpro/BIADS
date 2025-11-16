@@ -479,51 +479,46 @@ const BiAds = {
 
     // Check all accounts status
     checkAllAccountsStatus: async function() {
-        // Show confirmation toast
-        const confirmToast = this.showToast('warning', 'Xác nhận kiểm tra tất cả?', 
-            `Sẽ mở ${this.accounts.length} Chrome sessions. Bấm vào đây để xác nhận.`, 0);
-        
-        confirmToast.style.cursor = 'pointer';
-        confirmToast.onclick = async () => {
-            this.hideToast(confirmToast);
-            
-            try {
-                this.log('info', '🔄 Đang bắt đầu kiểm tra tất cả tài khoản...');
-                
-                const account_ids = this.accounts.map(acc => acc.id);
-                
-                const response = await fetch('http://localhost:8000/api/accounts/check-multiple', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ account_ids: account_ids })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    this.log('success', `✅ ${result.message}`);
-                    this.showToast('success', 'Đã bắt đầu kiểm tra', 
-                        `${result.account_count} tài khoản đang được kiểm tra. Xem tiến độ trong Lịch sử tác vụ`);
+        // Show modal confirmation
+        ModalConfirmation.showWarning({
+            title: 'Kiểm tra tất cả tài khoản?',
+            message: `Hệ thống sẽ mở ${this.accounts.length} Chrome sessions để kiểm tra`,
+            details: 'Quá trình này có thể mất vài phút. Bạn có thể theo dõi tiến độ trong Lịch sử tác vụ.',
+            confirmText: 'Bắt đầu kiểm tra',
+            cancelText: 'Hủy',
+            onConfirm: async () => {
+                try {
+                    this.log('info', '🔄 Đang bắt đầu kiểm tra tất cả tài khoản...');
                     
-                    // Auto-refresh after 10 seconds
-                    setTimeout(() => {
-                        this.loadAccountsFromBackend();
-                    }, 10000);
-                } else {
-                    throw new Error(result.message || 'Check failed');
+                    const account_ids = this.accounts.map(acc => acc.id);
+                    
+                    const response = await fetch('http://localhost:8000/api/accounts/check-multiple', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ account_ids: account_ids })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.log('success', `✅ ${result.message}`);
+                        this.showToast('success', 'Đã bắt đầu kiểm tra', 
+                            `${result.account_count} tài khoản đang được kiểm tra. Xem tiến độ trong Lịch sử tác vụ`);
+                        
+                        // Auto-refresh after 10 seconds
+                        setTimeout(() => {
+                            this.loadAccountsFromBackend();
+                        }, 10000);
+                    } else {
+                        throw new Error(result.message || 'Check failed');
+                    }
+                    
+                } catch (error) {
+                    this.log('error', `❌ Lỗi: ${error.message}`);
+                    this.showToast('error', 'Lỗi kiểm tra tài khoản', error.message);
                 }
-                
-            } catch (error) {
-                this.log('error', `❌ Lỗi: ${error.message}`);
-                this.showToast('error', 'Lỗi kiểm tra tài khoản', error.message);
             }
-        };
-        
-        setTimeout(() => {
-            if (confirmToast.parentElement) {
-                this.hideToast(confirmToast);
-            }
-        }, 10000);
+        });
     },
 
     // Show assign proxy modal
@@ -623,36 +618,31 @@ const BiAds = {
 
     // Delete account by ID
     deleteAccountById: async function(accountId) {
-        // Show confirmation toast
-        const confirmToast = this.showToast('warning', 'Xác nhận xóa tài khoản?', 
-            'Bấm vào đây để xác nhận xóa. Hành động này không thể hoàn tác!', 0);
-        
-        confirmToast.style.cursor = 'pointer';
-        confirmToast.onclick = async () => {
-            this.hideToast(confirmToast);
-            
-            const loadingToast = this.showLoading('Đang xóa...', 'Đang xóa tài khoản');
-            
-            try {
-                await apiClient.deleteAccount(accountId);
-                this.hideToast(loadingToast);
-                this.log('success', '✅ Đã xóa tài khoản');
-                this.showToast('success', 'Đã xóa tài khoản', 'Tài khoản đã được xóa khỏi hệ thống');
+        // Show modal confirmation
+        ModalConfirmation.showDanger({
+            title: 'Xóa tài khoản?',
+            message: 'Bạn có chắc chắn muốn xóa tài khoản này?',
+            details: 'Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan sẽ bị xóa vĩnh viễn.',
+            confirmText: 'Xóa ngay',
+            cancelText: 'Hủy',
+            onConfirm: async () => {
+                const loadingToast = this.showLoading('Đang xóa...', 'Đang xóa tài khoản');
                 
-                // Reload accounts
-                await this.loadAccountsFromBackend();
-            } catch (error) {
-                this.hideToast(loadingToast);
-                this.log('error', `❌ Lỗi: ${error.message}`);
-                this.showToast('error', 'Lỗi xóa tài khoản', error.message);
+                try {
+                    await apiClient.deleteAccount(accountId);
+                    this.hideToast(loadingToast);
+                    this.log('success', '✅ Đã xóa tài khoản');
+                    this.showToast('success', 'Đã xóa tài khoản', 'Tài khoản đã được xóa khỏi hệ thống');
+                    
+                    // Reload accounts
+                    await this.loadAccountsFromBackend();
+                } catch (error) {
+                    this.hideToast(loadingToast);
+                    this.log('error', `❌ Lỗi: ${error.message}`);
+                    this.showToast('error', 'Lỗi xóa tài khoản', error.message);
+                }
             }
-        };
-        
-        setTimeout(() => {
-            if (confirmToast.parentElement) {
-                this.hideToast(confirmToast);
-            }
-        }, 10000);
+        });
     },
 
     // Show Add Account Modal
@@ -1415,6 +1405,31 @@ const BiAds = {
         } catch (error) {
             console.error('Error loading task history page:', error);
             content.innerHTML = '<div class="info-box"><h4>📋 Task History</h4><p>Đang tải lịch sử tác vụ...</p></div>';
+        }
+    },
+    
+    // Load Activity Log Page
+    loadActivityLogPage: async function() {
+        const content = document.getElementById('contentBody');
+        const title = document.getElementById('contentTitle');
+        title.textContent = '📝 Nhật ký hoạt động';
+        
+        try {
+            const response = await fetch('activity-log.html');
+            const html = await response.text();
+            content.innerHTML = html;
+            
+            // Execute any scripts in the loaded content
+            const scripts = content.querySelectorAll('script');
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                newScript.textContent = script.textContent;
+                document.body.appendChild(newScript);
+                document.body.removeChild(newScript);
+            });
+        } catch (error) {
+            console.error('Error loading activity log page:', error);
+            content.innerHTML = '<div class="info-box"><h4>📝 Activity Log</h4><p>Đang tải nhật ký hoạt động...</p></div>';
         }
     },
     
