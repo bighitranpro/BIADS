@@ -96,6 +96,36 @@ async def get_whitelist(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/{whitelist_id}", response_model=WhitelistResponse)
+async def get_whitelist_by_id(
+    whitelist_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get single whitelist entry by ID"""
+    try:
+        result = await db.execute(
+            select(WhitelistAccount).where(WhitelistAccount.id == whitelist_id)
+        )
+        whitelist = result.scalar_one_or_none()
+        
+        if not whitelist:
+            raise HTTPException(status_code=404, detail="Whitelist entry not found")
+        
+        return WhitelistResponse(
+            id=whitelist.id,
+            uid=whitelist.uid,
+            name=whitelist.name,
+            username=whitelist.username,
+            reason=whitelist.reason,
+            is_active=whitelist.is_active,
+            created_at=whitelist.created_at,
+            updated_at=whitelist.updated_at
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/stats", response_model=WhitelistStats)
 async def get_whitelist_stats(db: AsyncSession = Depends(get_db)):
     """Get whitelist statistics"""

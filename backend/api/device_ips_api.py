@@ -192,6 +192,55 @@ async def get_device_ips(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/{ip_id}", response_model=DeviceIPResponse)
+async def get_device_ip_by_id(
+    ip_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get single device IP by ID"""
+    try:
+        result = await db.execute(
+            select(DeviceIP).where(DeviceIP.id == ip_id)
+        )
+        device_ip = result.scalar_one_or_none()
+        
+        if not device_ip:
+            raise HTTPException(status_code=404, detail="Device IP not found")
+        
+        # Get account info if associated
+        account_info = None
+        if device_ip.account_id:
+            account_result = await db.execute(
+                select(Account).where(Account.id == device_ip.account_id)
+            )
+            account = account_result.scalar_one_or_none()
+            if account:
+                account_info = {
+                    "id": account.id,
+                    "uid": account.uid,
+                    "name": account.name
+                }
+        
+        return DeviceIPResponse(
+            id=device_ip.id,
+            ip_address=device_ip.ip_address,
+            location=device_ip.location,
+            isp=device_ip.isp,
+            account_id=device_ip.account_id,
+            account_info=account_info,
+            is_trusted=device_ip.is_trusted,
+            is_blocked=device_ip.is_blocked,
+            last_used_at=device_ip.last_used_at,
+            access_count=device_ip.access_count,
+            notes=device_ip.notes,
+            created_at=device_ip.created_at,
+            updated_at=device_ip.updated_at
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/stats", response_model=DeviceIPStats)
 async def get_device_ip_stats(db: AsyncSession = Depends(get_db)):
     """Get device IP statistics"""
