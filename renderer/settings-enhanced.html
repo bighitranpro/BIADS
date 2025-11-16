@@ -689,67 +689,109 @@
                     if (!response.ok) throw new Error('Failed to load settings');
                     
                     const data = await response.json();
-                    const settings = data.settings;
+                    console.log('Loaded settings:', data);
+                    
+                    const settings = data.settings || {};
                     
                     // General
-                    document.getElementById('language').value = settings.language || 'vi';
-                    document.getElementById('theme').value = settings.theme || 'dark';
-                    document.getElementById('appName').value = settings.app_name || 'Bi Ads Multi Tool PRO';
-                    document.getElementById('appVersion').value = settings.app_version || '3.0.0';
+                    if (document.getElementById('language')) 
+                        document.getElementById('language').value = settings.language || 'vi';
+                    if (document.getElementById('theme'))
+                        document.getElementById('theme').value = settings.theme || 'dark';
+                    if (document.getElementById('appName'))
+                        document.getElementById('appName').value = settings.app_name || 'Bi Ads Multi Tool PRO';
+                    if (document.getElementById('appVersion'))
+                        document.getElementById('appVersion').value = settings.app_version || '3.0.0';
 
                     // Database
-                    document.getElementById('autoBackup').checked = settings.auto_backup || false;
+                    if (document.getElementById('autoBackup'))
+                        document.getElementById('autoBackup').checked = settings.auto_backup || false;
 
                     // Facebook
-                    document.getElementById('facebookAppId').value = settings.facebook_app_id || '';
-                    document.getElementById('facebookAppSecret').value = settings.facebook_app_secret || '';
-                    document.getElementById('facebookApiVersion').value = settings.facebook_api_version || 'v18.0';
-                    document.getElementById('webhookVerifyToken').value = settings.webhook_verify_token || '';
+                    if (document.getElementById('facebookAppId'))
+                        document.getElementById('facebookAppId').value = settings.facebook_app_id || '';
+                    if (document.getElementById('facebookAppSecret'))
+                        document.getElementById('facebookAppSecret').value = settings.facebook_app_secret || '';
+                    if (document.getElementById('facebookApiVersion'))
+                        document.getElementById('facebookApiVersion').value = settings.facebook_api_version || 'v18.0';
+                    if (document.getElementById('webhookVerifyToken'))
+                        document.getElementById('webhookVerifyToken').value = settings.webhook_verify_token || '';
 
                     // Telegram
-                    document.getElementById('telegramEnabled').checked = settings.telegram_enabled || false;
-                    document.getElementById('telegramBotToken').value = settings.telegram_bot_token || '';
-                    document.getElementById('telegramChatId').value = settings.telegram_chat_id || '';
-                    document.getElementById('notifyTaskComplete').checked = settings.telegram_notify_on_success || true;
-                    document.getElementById('notifyTaskFailed').checked = settings.telegram_notify_on_error || true;
-                    document.getElementById('notifyError').checked = settings.telegram_notify_on_error || true;
+                    if (document.getElementById('telegramEnabled'))
+                        document.getElementById('telegramEnabled').checked = settings.telegram_enabled !== false;
+                    if (document.getElementById('telegramBotToken'))
+                        document.getElementById('telegramBotToken').value = settings.telegram_bot_token || '';
+                    if (document.getElementById('telegramChatId'))
+                        document.getElementById('telegramChatId').value = settings.telegram_chat_id || '';
+                    if (document.getElementById('notifyTaskComplete'))
+                        document.getElementById('notifyTaskComplete').checked = settings.telegram_notify_on_success !== false;
+                    if (document.getElementById('notifyTaskFailed'))
+                        document.getElementById('notifyTaskFailed').checked = settings.telegram_notify_on_error !== false;
+                    if (document.getElementById('notifyError'))
+                        document.getElementById('notifyError').checked = settings.telegram_notify_on_error !== false;
 
                     // Tasks
-                    document.getElementById('defaultDelay').value = settings.default_delay || 10;
-                    document.getElementById('maxRetries').value = settings.default_retry || 3;
-                    document.getElementById('taskTimeout').value = settings.default_timeout || 300;
-                    document.getElementById('maxConcurrent').value = settings.max_concurrent_tasks || 5;
-                    document.getElementById('autoStartTasks').checked = settings.auto_start_tasks || false;
-                    document.getElementById('autoRestartFailed').checked = settings.auto_restart_failed_tasks || true;
-                    document.getElementById('saveLogsToFile').checked = settings.save_logs_to_file || true;
-                    document.getElementById('maxActionsPerHour').value = settings.api_rate_limit || 100;
+                    if (document.getElementById('defaultDelay'))
+                        document.getElementById('defaultDelay').value = settings.default_delay || 10;
+                    if (document.getElementById('maxRetries'))
+                        document.getElementById('maxRetries').value = settings.default_retry || 3;
+                    if (document.getElementById('taskTimeout'))
+                        document.getElementById('taskTimeout').value = settings.default_timeout || 300;
+                    if (document.getElementById('maxConcurrent'))
+                        document.getElementById('maxConcurrent').value = settings.max_concurrent_tasks || 5;
+                    if (document.getElementById('autoStartTasks'))
+                        document.getElementById('autoStartTasks').checked = settings.auto_start_tasks || false;
+                    if (document.getElementById('autoRestartFailed'))
+                        document.getElementById('autoRestartFailed').checked = settings.auto_restart_failed_tasks !== false;
+                    if (document.getElementById('saveLogsToFile'))
+                        document.getElementById('saveLogsToFile').checked = settings.save_logs_to_file !== false;
+                    if (document.getElementById('maxActionsPerHour'))
+                        document.getElementById('maxActionsPerHour').value = settings.api_rate_limit || 100;
 
                     // Proxy
-                    document.getElementById('autoAssignProxy').checked = settings.auto_assign_proxy || true;
-                    document.getElementById('rotateProxyOnError').checked = settings.rotate_proxy_on_error || true;
-                    document.getElementById('checkProxyBeforeUse').checked = settings.check_proxy_before_use || true;
-                    document.getElementById('proxyTimeout').value = settings.proxy_timeout || 30;
+                    if (document.getElementById('autoAssignProxy'))
+                        document.getElementById('autoAssignProxy').checked = settings.auto_assign_proxy !== false;
+                    if (document.getElementById('rotateProxyOnError'))
+                        document.getElementById('rotateProxyOnError').checked = settings.rotate_proxy_on_error !== false;
+                    if (document.getElementById('checkProxyBeforeUse'))
+                        document.getElementById('checkProxyBeforeUse').checked = settings.check_proxy_before_use !== false;
+                    if (document.getElementById('proxyTimeout'))
+                        document.getElementById('proxyTimeout').value = settings.proxy_timeout || 30;
 
                     // Advanced
-                    document.getElementById('debugMode').checked = settings.debug_mode || false;
-                    document.getElementById('verboseLogging').checked = settings.verbose_logging || false;
-                    document.getElementById('logLevel').value = settings.log_level || 'INFO';
-                    document.getElementById('cacheEnabled').checked = settings.cache_enabled || true;
-                    document.getElementById('cacheTtl').value = settings.cache_ttl || 300;
-                    document.getElementById('batchSize').value = settings.batch_size || 10;
-                    document.getElementById('enable2fa').checked = settings.enable_2fa || false;
-                    document.getElementById('sessionTimeout').value = settings.session_timeout || 3600;
-                    document.getElementById('autoLogout').checked = settings.auto_logout || false;
+                    if (document.getElementById('debugMode'))
+                        document.getElementById('debugMode').checked = settings.debug_mode || false;
+                    if (document.getElementById('verboseLogging'))
+                        document.getElementById('verboseLogging').checked = settings.verbose_logging || false;
+                    if (document.getElementById('logLevel'))
+                        document.getElementById('logLevel').value = settings.log_level || 'INFO';
+                    if (document.getElementById('cacheEnabled'))
+                        document.getElementById('cacheEnabled').checked = settings.cache_enabled !== false;
+                    if (document.getElementById('cacheTtl'))
+                        document.getElementById('cacheTtl').value = settings.cache_ttl || 300;
+                    if (document.getElementById('batchSize'))
+                        document.getElementById('batchSize').value = settings.batch_size || 10;
+                    if (document.getElementById('enable2fa'))
+                        document.getElementById('enable2fa').checked = settings.enable_2fa || false;
+                    if (document.getElementById('sessionTimeout'))
+                        document.getElementById('sessionTimeout').value = settings.session_timeout || 3600;
+                    if (document.getElementById('autoLogout'))
+                        document.getElementById('autoLogout').checked = settings.auto_logout || false;
 
-                    this.showToast('success', 'Đã tải cài đặt thành công!');
+                    this.showToast('success', '✅ Đã tải cài đặt thành công!');
+                    console.log('Settings loaded successfully');
                 } catch (error) {
                     console.error('Error loading settings:', error);
-                    this.showToast('error', 'Lỗi tải cài đặt: ' + error.message);
+                    this.showToast('error', '❌ Lỗi tải cài đặt: ' + error.message);
                 }
             },
 
             async saveSettings() {
                 try {
+                    // Show loading state
+                    this.showToast('info', '⏳ Đang lưu cài đặt...');
+                    
                     const settings = {
                         // General
                         app_name: 'Bi Ads Multi Tool PRO',
@@ -761,51 +803,53 @@
                         auto_backup: document.getElementById('autoBackup').checked,
 
                         // Facebook
-                        facebook_app_id: document.getElementById('facebookAppId').value,
-                        facebook_app_secret: document.getElementById('facebookAppSecret').value,
+                        facebook_app_id: document.getElementById('facebookAppId').value || '',
+                        facebook_app_secret: document.getElementById('facebookAppSecret').value || '',
                         facebook_api_version: document.getElementById('facebookApiVersion').value,
-                        webhook_verify_token: document.getElementById('webhookVerifyToken').value,
+                        webhook_verify_token: document.getElementById('webhookVerifyToken').value || '',
 
                         // Telegram
                         telegram_enabled: document.getElementById('telegramEnabled').checked,
-                        telegram_bot_token: document.getElementById('telegramBotToken').value,
-                        telegram_chat_id: document.getElementById('telegramChatId').value,
+                        telegram_bot_token: document.getElementById('telegramBotToken').value || '',
+                        telegram_chat_id: document.getElementById('telegramChatId').value || '',
                         telegram_notify_on_success: document.getElementById('notifyTaskComplete').checked,
                         telegram_notify_on_error: document.getElementById('notifyTaskFailed').checked,
                         telegram_notify_on_start: false,
 
                         // Tasks
-                        default_delay: parseInt(document.getElementById('defaultDelay').value),
-                        default_retry: parseInt(document.getElementById('maxRetries').value),
-                        default_timeout: parseInt(document.getElementById('taskTimeout').value),
-                        max_concurrent_tasks: parseInt(document.getElementById('maxConcurrent').value),
+                        default_delay: parseInt(document.getElementById('defaultDelay').value) || 10,
+                        default_retry: parseInt(document.getElementById('maxRetries').value) || 3,
+                        default_timeout: parseInt(document.getElementById('taskTimeout').value) || 300,
+                        max_concurrent_tasks: parseInt(document.getElementById('maxConcurrent').value) || 5,
                         auto_start_tasks: document.getElementById('autoStartTasks').checked,
                         auto_restart_failed_tasks: document.getElementById('autoRestartFailed').checked,
                         save_logs_to_file: document.getElementById('saveLogsToFile').checked,
                         max_log_entries: 1000,
-                        api_rate_limit: parseInt(document.getElementById('maxActionsPerHour').value),
+                        api_rate_limit: parseInt(document.getElementById('maxActionsPerHour').value) || 100,
 
                         // Proxy
                         auto_assign_proxy: document.getElementById('autoAssignProxy').checked,
                         rotate_proxy_on_error: document.getElementById('rotateProxyOnError').checked,
                         check_proxy_before_use: document.getElementById('checkProxyBeforeUse').checked,
-                        proxy_timeout: parseInt(document.getElementById('proxyTimeout').value),
+                        proxy_timeout: parseInt(document.getElementById('proxyTimeout').value) || 30,
 
                         // Security
                         enable_2fa: document.getElementById('enable2fa').checked,
-                        session_timeout: parseInt(document.getElementById('sessionTimeout').value),
+                        session_timeout: parseInt(document.getElementById('sessionTimeout').value) || 3600,
                         auto_logout: document.getElementById('autoLogout').checked,
 
                         // Performance
                         cache_enabled: document.getElementById('cacheEnabled').checked,
-                        cache_ttl: parseInt(document.getElementById('cacheTtl').value),
-                        batch_size: parseInt(document.getElementById('batchSize').value),
+                        cache_ttl: parseInt(document.getElementById('cacheTtl').value) || 300,
+                        batch_size: parseInt(document.getElementById('batchSize').value) || 10,
 
                         // Advanced
                         debug_mode: document.getElementById('debugMode').checked,
                         verbose_logging: document.getElementById('verboseLogging').checked,
                         log_level: document.getElementById('logLevel').value
                     };
+
+                    console.log('Saving settings:', settings);
 
                     const response = await fetch(`${API_URL}/api/settings/`, {
                         method: 'PUT',
@@ -815,10 +859,21 @@
                         body: JSON.stringify(settings)
                     });
 
-                    if (!response.ok) throw new Error('Failed to save settings');
+                    console.log('Response status:', response.status);
                     
                     const result = await response.json();
-                    this.showToast('success', '✅ Đã lưu cài đặt thành công!');
+                    console.log('Response data:', result);
+
+                    if (!response.ok) {
+                        throw new Error(result.message || result.detail || 'Failed to save settings');
+                    }
+                    
+                    if (result.success) {
+                        this.showToast('success', '✅ Đã lưu cài đặt thành công!');
+                        console.log('Settings saved successfully');
+                    } else {
+                        throw new Error(result.message || 'Save failed');
+                    }
                     
                 } catch (error) {
                     console.error('Error saving settings:', error);
@@ -892,12 +947,21 @@
                 icon.textContent = icons[type] || 'ℹ️';
                 text.textContent = message;
                 
+                // Remove any existing show class first
+                toast.classList.remove('show');
+                
+                // Force reflow
+                void toast.offsetWidth;
+                
+                // Add show class
                 toast.className = `toast ${type} show`;
 
-                // Auto hide after 3 seconds
+                console.log(`Toast: [${type}] ${message}`);
+
+                // Auto hide after 5 seconds (increased from 3)
                 setTimeout(() => {
                     toast.classList.remove('show');
-                }, 3000);
+                }, 5000);
             }
         };
 
